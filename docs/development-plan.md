@@ -18,7 +18,7 @@ market-data demo plus benchmarks.
 Owners:
 
 - **Albert** — production C++ matching engine
-- **Brother** — independent test framework and read-only market-data pipeline
+- **Brian** — independent test framework and read-only market-data pipeline
 - **Both** — contracts, semantics, reviews, and milestone acceptance
 
 ## Current status
@@ -71,7 +71,7 @@ orders. Provider-specific code must not appear in the engine's public API.
 - [ ] Add implementation-local unit tests with each production change.
 - [ ] Add benchmarks only after all correctness gates pass.
 
-### Brother: independent verification
+### Brian: independent verification
 
 - [ ] Own `tests/reference_book.*`.
 - [ ] Own `tests/scenarios/`.
@@ -81,7 +81,7 @@ orders. Provider-specific code must not appear in the engine's public API.
 - [ ] Do not reuse production matching functions or private containers.
 - [ ] Persist failing random seeds so failures are reproducible.
 
-### Brother: market-data integration
+### Brian: market-data integration
 
 - [ ] Own `tools/market_data/`.
 - [ ] Capture raw responses or streams without modification.
@@ -110,8 +110,8 @@ orders. Provider-specific code must not appear in the engine's public API.
 - [ ] **Both:** Add the CMake project.
 - [ ] **Both:** Create `lob` and `lob_tests` targets.
 - [ ] **Both:** Require C++20.
-- [ ] **Brother:** Enable warnings-as-errors in CI.
-- [ ] **Brother:** Add AddressSanitizer and UndefinedBehaviorSanitizer jobs.
+- [ ] **Brian:** Enable warnings-as-errors in CI.
+- [ ] **Brian:** Add AddressSanitizer and UndefinedBehaviorSanitizer jobs.
 - [ ] **Both:** Document one-command local build and test instructions.
 
 ### Public contract
@@ -173,7 +173,7 @@ Work in parallel after Milestone 0 merges.
 - [ ] Implement resting-quantity lookup.
 - [ ] Add unit tests for both sides and multiple prices.
 
-### Brother: reference model and harness
+### Brian: reference model and harness
 
 - [ ] Implement a slow reference book optimized for clarity.
 - [ ] Keep reference state independent from production internals.
@@ -220,7 +220,7 @@ Work in parallel after Milestone 0 merges.
 - [ ] Remove the price level when its final order is cancelled.
 - [ ] Test cancellation at the head, middle, and tail.
 
-### Brother: differential verification
+### Brian: differential verification
 
 - [ ] Assert exact event ordering, not only final BBO.
 - [ ] Generate deterministic add/cancel command streams.
@@ -254,7 +254,7 @@ Work in parallel after Milestone 0 merges.
 - [ ] Prevent overflow during the FOK quantity check.
 - [ ] Confirm insufficient FOK cannot emit a partial trade.
 
-### Brother: hardening
+### Brian: hardening
 
 - [ ] Add no-mutation assertions for all rejected commands.
 - [ ] Add empty-book and one-sided-book scenarios.
@@ -300,10 +300,10 @@ reverse-engineered Robinhood equities endpoints.
 
 ### Capture
 
-- [ ] **Brother:** Choose and document the provider and data granularity.
-- [ ] **Brother:** Record a small raw fixture without modification.
-- [ ] **Brother:** Record provider sequence numbers and timestamps.
-- [ ] **Brother:** Remove credentials and account information.
+- [ ] **Brian:** Choose and document the provider and data granularity.
+- [ ] **Brian:** Record a small raw fixture without modification.
+- [ ] **Brian:** Record provider sequence numbers and timestamps.
+- [ ] **Brian:** Remove credentials and account information.
 - [ ] **Both:** Confirm the fixture license permits committing it.
 
 ### Normalize
