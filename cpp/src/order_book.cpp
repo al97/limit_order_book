@@ -1,4 +1,3 @@
-#include "lob/types.hpp"
 #include "lob/order_book.hpp"
 
 namespace lob {
