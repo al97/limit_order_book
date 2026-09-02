@@ -112,7 +112,7 @@ orders. Provider-specific code must not appear in the engine's public API.
 - [ ] **Both:** Require C++20.
 - [x] **Brian:** Enable warnings-as-errors in CI ([PR #3](https://github.com/al97/limit_order_book/pull/3)).
 - [x] **Brian:** Add AddressSanitizer and UndefinedBehaviorSanitizer jobs ([PR #3](https://github.com/al97/limit_order_book/pull/3)).
-- [x] **Both:** Document one-command local build and test instructions.
+- [x] **Both:** Document one-command local build and test instructions ([PR #4](https://github.com/al97/limit_order_book/pull/4)).
 
 ### Public contract
 
