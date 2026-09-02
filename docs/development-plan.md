@@ -110,8 +110,8 @@ orders. Provider-specific code must not appear in the engine's public API.
 - [ ] **Both:** Add the CMake project.
 - [ ] **Both:** Create `lob` and `lob_tests` targets.
 - [ ] **Both:** Require C++20.
-- [ ] **Brian:** Enable warnings-as-errors in CI.
-- [ ] **Brian:** Add AddressSanitizer and UndefinedBehaviorSanitizer jobs.
+- [x] **Brian:** Enable warnings-as-errors in CI ([PR #3](https://github.com/al97/limit_order_book/pull/3)).
+- [x] **Brian:** Add AddressSanitizer and UndefinedBehaviorSanitizer jobs ([PR #3](https://github.com/al97/limit_order_book/pull/3)).
 - [ ] **Both:** Document one-command local build and test instructions.
 
 ### Public contract
