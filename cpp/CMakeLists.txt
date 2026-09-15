@@ -41,3 +41,18 @@ target_link_libraries(types_test PRIVATE lob)
 target_link_libraries(order_book_test PRIVATE lob)
 target_include_directories(reference_book_test PRIVATE include)
 target_compile_features(reference_book_test PRIVATE cxx_std_20)
+
+add_executable(agree_test
+  tests/reference_book.cpp
+  tests/snapshot.cpp
+  tests/agree_test.cpp
+)
+
+add_test(
+  NAME agree_test
+  COMMAND agree_test
+)
+
+target_include_directories(agree_test PRIVATE include)
+target_compile_features(agree_test PRIVATE cxx_std_20)
+target_link_libraries(agree_test PRIVATE lob)
