@@ -73,12 +73,12 @@ orders. Provider-specific code must not appear in the engine's public API.
 
 ### Brian: independent verification
 
-- [ ] Own `tests/reference_book.*`.
+- [x] Own `tests/reference_book.*` ([PR #6](https://github.com/al97/limit_order_book/pull/6)).
 - [ ] Own `tests/scenarios/`.
 - [ ] Own randomized and differential test infrastructure.
 - [ ] Own sanitizer and CI integration.
-- [ ] Keep the reference model deliberately simple.
-- [ ] Do not reuse production matching functions or private containers.
+- [x] Keep the reference model deliberately simple ([PR #6](https://github.com/al97/limit_order_book/pull/6)).
+- [x] Do not reuse production matching functions or private containers ([PR #6](https://github.com/al97/limit_order_book/pull/6)).
 - [ ] Persist failing random seeds so failures are reproducible.
 
 ### Brian: market-data integration
@@ -175,11 +175,11 @@ Work in parallel after Milestone 0 merges.
 
 ### Brian: reference model and harness
 
-- [ ] Implement a slow reference book optimized for clarity.
-- [ ] Keep reference state independent from production internals.
+- [x] Implement a slow reference book optimized for clarity ([PR #6](https://github.com/al97/limit_order_book/pull/6)).
+- [x] Keep reference state independent from production internals ([PR #6](https://github.com/al97/limit_order_book/pull/6)).
 - [ ] Build helpers to compare observable snapshots.
-- [ ] Add malformed-command and rejection scenarios.
-- [ ] Add invariant checks for level totals and live IDs.
+- [x] Add malformed-command and rejection scenarios ([PR #6](https://github.com/al97/limit_order_book/pull/6)).
+- [x] Add invariant checks for level totals and live IDs ([PR #6](https://github.com/al97/limit_order_book/pull/6)).
 - [ ] Make test failures print the full command history.
 
 ### Exit gate
