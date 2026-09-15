@@ -14,6 +14,6 @@ From the repository root, run the same sequence as the `warnings` job in [`.gith
 cmake -S cpp -B build -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-Wall -Wextra -Wpedantic -Werror" && cmake --build build --parallel && ctest --test-dir build --output-on-failure
 ```
 
-`ctest` runs `types_test`, `order_book_test`, and `reference_book_test`.
+`ctest` runs `types_test`, `order_book_test`, `reference_book_test`, and `agree_test`.
 
 If you want sanitizers, follow the `asan` and `ubsan` jobs in `.github/workflows/ci.yml`.

@@ -24,7 +24,7 @@ Owners:
 ## Current status
 
 - [ ] Milestone 0: Shared contracts and scaffolding
-- [ ] Milestone 1: Resting book and reference model
+- [x] Milestone 1: Resting book and reference model
 - [ ] Milestone 2: Matching, cancellation, and differential tests
 - [ ] Milestone 3: Time-in-force and hardening
 - [ ] Optional Milestone 4: Real-world market-data replay
@@ -177,18 +177,18 @@ Work in parallel after Milestone 0 merges.
 
 - [x] Implement a slow reference book optimized for clarity ([PR #6](https://github.com/al97/limit_order_book/pull/6)).
 - [x] Keep reference state independent from production internals ([PR #6](https://github.com/al97/limit_order_book/pull/6)).
-- [ ] Build helpers to compare observable snapshots.
+- [x] Build helpers to compare observable snapshots.
 - [x] Add malformed-command and rejection scenarios ([PR #6](https://github.com/al97/limit_order_book/pull/6)).
 - [x] Add invariant checks for level totals and live IDs ([PR #6](https://github.com/al97/limit_order_book/pull/6)).
-- [ ] Make test failures print the full command history.
+- [x] Make test failures print the full command history.
 
 ### Exit gate
 
-- [ ] Production and reference books agree on all non-crossing scenarios.
-- [ ] Bids are returned highest first.
-- [ ] Asks are returned lowest first.
-- [ ] Level totals equal the sum of resting orders.
-- [ ] Every live order has exactly one ID-index entry.
+- [x] Production and reference books agree on all non-crossing scenarios.
+- [x] Bids are returned highest first.
+- [x] Asks are returned lowest first.
+- [x] Level totals equal the sum of resting orders.
+- [x] Every live order has exactly one ID-index entry.
 
 ## Milestone 2: Matching, cancellation, and differential tests
 
