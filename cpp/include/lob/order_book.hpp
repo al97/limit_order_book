@@ -2,6 +2,8 @@
 
 #include "lob/types.hpp"
 #include <vector>
+#include <list>
+#include <map>
 
 namespace lob {
   class OrderBook {
@@ -11,11 +13,14 @@ namespace lob {
 
       std::vector<Event> Submit(const NewOrder& order);
       std::vector<Event> Cancel(OrderId id);
-      Order Top(Side side);
+      LevelSnapshot Top(Side side);
       std::vector<LevelSnapshot> Depth(Side side, std::size_t levels) const;
-      Quantity GetRestingQuantity(OrderId id);
+      Quantity GetRestingQuantity(OrderId id) const;
 
     private:
-      std::vector<Order> orders;
+      std::map<PriceTicks, std::list<Order>> sellSideMap;
+      std::map<PriceTicks, std::list<Order>, std::greater<PriceTicks>> buySideMap;
+      std::map<OrderId, std::list<Order>::iterator> locator;
+
   };
 }
