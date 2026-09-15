@@ -25,6 +25,8 @@ Owners:
 
 - [ ] Milestone 0: Shared contracts and scaffolding
 - [x] Milestone 1: Resting book and reference model
+- [x] Milestone 0: Shared contracts and scaffolding
+- [x] Milestone 1: Resting book and reference model
 - [ ] Milestone 2: Matching, cancellation, and differential tests
 - [ ] Milestone 3: Time-in-force and hardening
 - [ ] Optional Milestone 4: Real-world market-data replay
@@ -61,14 +63,14 @@ orders. Provider-specific code must not appear in the engine's public API.
 
 ### Albert: production implementation
 
-- [ ] Own `include/lob/types.hpp`.
-- [ ] Own `include/lob/order_book.hpp`.
-- [ ] Own `src/order_book.cpp`.
-- [ ] Implement integer ticks and quantities.
+- [x] Own `include/lob/types.hpp` ([PR #2](https://github.com/al97/limit_order_book/pull/2), [PR #5](https://github.com/al97/limit_order_book/pull/5)).
+- [x] Own `include/lob/order_book.hpp` ([PR #2](https://github.com/al97/limit_order_book/pull/2), [PR #5](https://github.com/al97/limit_order_book/pull/5)).
+- [x] Own `src/order_book.cpp` ([PR #2](https://github.com/al97/limit_order_book/pull/2), [PR #5](https://github.com/al97/limit_order_book/pull/5)).
+- [x] Implement integer ticks and quantities ([PR #2](https://github.com/al97/limit_order_book/pull/2)).
 - [ ] Implement price-time matching at the resting order's price.
 - [ ] Implement active cancellation.
 - [ ] Implement GTC, IOC, Market, and FOK behavior.
-- [ ] Add implementation-local unit tests with each production change.
+- [x] Add implementation-local unit tests with each production change ([PR #2](https://github.com/al97/limit_order_book/pull/2), [PR #5](https://github.com/al97/limit_order_book/pull/5)).
 - [ ] Add benchmarks only after all correctness gates pass.
 
 ### Brian: independent verification
@@ -92,8 +94,8 @@ orders. Provider-specific code must not appear in the engine's public API.
 
 ### Both: shared decisions
 
-- [ ] Approve the public order-book API before parallel implementation.
-- [ ] Approve event and rejection semantics.
+- [x] Approve the public order-book API before parallel implementation ([PR #2](https://github.com/al97/limit_order_book/pull/2)).
+- [x] Approve event and rejection semantics ([PR #2](https://github.com/al97/limit_order_book/pull/2), `cpp/tests/golden_scenarios.md`).
 - [ ] Approve synthetic-command and market-data schemas.
 - [ ] Review every public-header change.
 - [ ] Review each other's pull requests.
@@ -107,24 +109,24 @@ orders. Provider-specific code must not appear in the engine's public API.
 
 ### Repository setup
 
-- [ ] **Both:** Add the CMake project.
-- [ ] **Both:** Create `lob` and `lob_tests` targets.
-- [ ] **Both:** Require C++20.
+- [x] **Both:** Add the CMake project ([PR #2](https://github.com/al97/limit_order_book/pull/2)).
+- [x] **Both:** Create `lob` and `lob_tests` targets ([PR #2](https://github.com/al97/limit_order_book/pull/2)).
+- [x] **Both:** Require C++20 ([PR #2](https://github.com/al97/limit_order_book/pull/2)).
 - [x] **Brian:** Enable warnings-as-errors in CI ([PR #3](https://github.com/al97/limit_order_book/pull/3)).
 - [x] **Brian:** Add AddressSanitizer and UndefinedBehaviorSanitizer jobs ([PR #3](https://github.com/al97/limit_order_book/pull/3)).
 - [x] **Both:** Document one-command local build and test instructions ([PR #4](https://github.com/al97/limit_order_book/pull/4)).
 
 ### Public contract
 
-- [ ] **Albert:** Define `OrderId`, `Price`, `Quantity`, and `Sequence` as
-      integer types.
-- [ ] **Albert:** Define `Side`, `TimeInForce`, `EventType`, and
-      `RejectReason`.
-- [ ] **Both:** Agree on the `NewOrder` shape.
-- [ ] **Both:** Agree on the `Event` shape and event ordering.
-- [ ] **Both:** Agree on `submit`, `cancel`, `top`, `depth`, and
-      `resting_quantity`.
-- [ ] **Both:** Keep all containers private.
+- [x] **Albert:** Define `OrderId`, `Price`, `Quantity`, and `Sequence` as
+      integer types ([PR #2](https://github.com/al97/limit_order_book/pull/2)).
+- [x] **Albert:** Define `Side`, `TimeInForce`, `EventType`, and
+      `RejectReason` ([PR #2](https://github.com/al97/limit_order_book/pull/2)).
+- [x] **Both:** Agree on the `NewOrder` shape ([PR #2](https://github.com/al97/limit_order_book/pull/2)).
+- [x] **Both:** Agree on the `Event` shape and event ordering ([PR #2](https://github.com/al97/limit_order_book/pull/2)).
+- [x] **Both:** Agree on `submit`, `cancel`, `top`, `depth`, and
+      `resting_quantity` ([PR #2](https://github.com/al97/limit_order_book/pull/2)).
+- [x] **Both:** Keep all containers private ([PR #5](https://github.com/al97/limit_order_book/pull/5)).
 
 ### Locked behavior
 
@@ -138,16 +140,16 @@ orders. Provider-specific code must not appear in the engine's public API.
 
 ### Shared golden scenarios
 
-- [ ] **Both:** Non-crossing GTC order rests.
-- [ ] **Both:** Buy 101 crosses resting sell 100 and trades at 100.
-- [ ] **Both:** Two orders at one price fill FIFO with a partial second fill.
+- [x] **Both:** Non-crossing GTC order rests (`cpp/tests/golden_scenarios.md`, [PR #2](https://github.com/al97/limit_order_book/pull/2)).
+- [x] **Both:** Buy 101 crosses resting sell 100 and trades at 100 (`cpp/tests/golden_scenarios.md`, [PR #2](https://github.com/al97/limit_order_book/pull/2)).
+- [x] **Both:** Two orders at one price fill FIFO with a partial second fill (`cpp/tests/golden_scenarios.md`, [PR #2](https://github.com/al97/limit_order_book/pull/2)).
 
 ### Exit gate
 
-- [ ] Both contributors can build the same checkout.
-- [ ] Public headers compile.
-- [ ] The three golden scenarios have agreed expected events and final states.
-- [ ] No production matching logic is required yet.
+- [x] Both contributors can build the same checkout ([PR #4](https://github.com/al97/limit_order_book/pull/4)).
+- [x] Public headers compile ([PR #2](https://github.com/al97/limit_order_book/pull/2), [PR #5](https://github.com/al97/limit_order_book/pull/5)).
+- [x] The three golden scenarios have agreed expected events and final states ([PR #2](https://github.com/al97/limit_order_book/pull/2)).
+- [x] No production matching logic is required yet (Milestone 0 scope).
 
 ## Milestone 1: Resting book and reference model
 
@@ -162,16 +164,16 @@ Work in parallel after Milestone 0 merges.
 
 ### Albert: resting production book
 
-- [ ] Add descending ordered bid levels.
-- [ ] Add ascending ordered ask levels.
-- [ ] Add FIFO orders inside each price level.
-- [ ] Cache total remaining quantity per level.
-- [ ] Add the order-ID-to-locator index.
-- [ ] Implement non-crossing GTC insertion.
-- [ ] Implement top-of-book queries.
-- [ ] Implement depth queries.
-- [ ] Implement resting-quantity lookup.
-- [ ] Add unit tests for both sides and multiple prices.
+- [x] Add descending ordered bid levels ([PR #5](https://github.com/al97/limit_order_book/pull/5)).
+- [x] Add ascending ordered ask levels ([PR #5](https://github.com/al97/limit_order_book/pull/5)).
+- [x] Add FIFO orders inside each price level ([PR #5](https://github.com/al97/limit_order_book/pull/5)).
+- [ ] Cache total remaining quantity per level (totals computed on query today).
+- [x] Add the order-ID-to-locator index ([PR #5](https://github.com/al97/limit_order_book/pull/5)).
+- [x] Implement non-crossing GTC insertion (`AddOrder` resting path, [PR #5](https://github.com/al97/limit_order_book/pull/5)).
+- [x] Implement top-of-book queries ([PR #5](https://github.com/al97/limit_order_book/pull/5)).
+- [x] Implement depth queries ([PR #5](https://github.com/al97/limit_order_book/pull/5)).
+- [x] Implement resting-quantity lookup ([PR #5](https://github.com/al97/limit_order_book/pull/5)).
+- [x] Add unit tests for both sides and multiple prices ([PR #5](https://github.com/al97/limit_order_book/pull/5)).
 
 ### Brian: reference model and harness
 
@@ -185,10 +187,10 @@ Work in parallel after Milestone 0 merges.
 ### Exit gate
 
 - [x] Production and reference books agree on all non-crossing scenarios.
-- [x] Bids are returned highest first.
-- [x] Asks are returned lowest first.
-- [x] Level totals equal the sum of resting orders.
-- [x] Every live order has exactly one ID-index entry.
+- [x] Bids are returned highest first ([PR #5](https://github.com/al97/limit_order_book/pull/5)).
+- [x] Asks are returned lowest first ([PR #5](https://github.com/al97/limit_order_book/pull/5)).
+- [x] Level totals equal the sum of resting orders ([PR #5](https://github.com/al97/limit_order_book/pull/5)).
+- [x] Every live order has exactly one ID-index entry ([PR #5](https://github.com/al97/limit_order_book/pull/5)).
 
 ## Milestone 2: Matching, cancellation, and differential tests
 
@@ -361,7 +363,7 @@ Copy this section into each pull request:
 
 ## Working agreements
 
-- [ ] Protect `main`; merge through reviewed pull requests.
+- [x] Protect `main`; merge through reviewed pull requests.
 - [ ] Prefer small branches that live for days, not weeks.
 - [ ] Rebase or merge `main` before requesting final review.
 - [ ] Resolve API disagreements in the shared contract before implementing both
