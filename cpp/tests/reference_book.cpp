@@ -23,14 +23,6 @@ std::vector<LevelSnapshot> TakeDepth(const Levels& levels, std::size_t count) {
   return depth;
 }
 
-template <class Levels>
-Order TakeTop(const Levels& levels) {
-  if (levels.empty()) {
-    return Order{};
-  }
-  return levels.begin()->second.front();
-}
-
 }  // namespace
 
 Event ReferenceBook::MakeEvent(EventType type, const NewOrder& order,
@@ -65,11 +57,12 @@ std::vector<Event> ReferenceBook::Submit(const NewOrder& order) {
   return {MakeEvent(EventType::Accepted, order, RejectReason::None)};
 }
 
-Order ReferenceBook::Top(Side side) const {
-  if (side == Side::Buy) {
-    return TakeTop(bids_);
+LevelSnapshot ReferenceBook::Top(Side side) const {
+  const std::vector<LevelSnapshot> top = Depth(side, 1);
+  if (top.empty()) {
+    return LevelSnapshot{0, 0};
   }
-  return TakeTop(asks_);
+  return top.front();
 }
 
 std::vector<LevelSnapshot> ReferenceBook::Depth(Side side,

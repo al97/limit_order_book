@@ -21,8 +21,7 @@ void TestNonCrossingGtcRests() {
   assert(book.Depth(lob::Side::Sell, 10).empty());
   assert(book.GetRestingQuantity(1) == 10);
 
-  const lob::Order top = book.Top(lob::Side::Buy);
-  assert(top.id == 1);
+  const lob::LevelSnapshot top = book.Top(lob::Side::Buy);
   assert(top.price == 100);
   assert(top.quantity == 10);
 }
@@ -52,6 +51,13 @@ void TestBidAndAskPriceOrder() {
   assert(asks[0].quantity == 7);
   assert(asks[1].price == 110);
   assert(asks[1].quantity == 4);
+
+  const lob::LevelSnapshot best_bid = book.Top(lob::Side::Buy);
+  assert(best_bid.price == 101);
+  assert(best_bid.quantity == 5);
+  const lob::LevelSnapshot best_ask = book.Top(lob::Side::Sell);
+  assert(best_ask.price == 105);
+  assert(best_ask.quantity == 7);
 }
 
 void TestSamePriceSumsLevel() {
@@ -66,6 +72,9 @@ void TestSamePriceSumsLevel() {
   assert(bids.size() == 1);
   assert(bids[0].price == 100);
   assert(bids[0].quantity == 15);
+  const lob::LevelSnapshot top = book.Top(lob::Side::Buy);
+  assert(top.price == 100);
+  assert(top.quantity == 15);
   assert(book.GetRestingQuantity(1) == 10);
   assert(book.GetRestingQuantity(2) == 5);
 }

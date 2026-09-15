@@ -14,7 +14,7 @@ namespace lob::ref {
 class ReferenceBook {
  public:
   std::vector<Event> Submit(const NewOrder& order);
-  Order Top(Side side) const;
+  LevelSnapshot Top(Side side) const;
   std::vector<LevelSnapshot> Depth(Side side, std::size_t levels) const;
   Quantity GetRestingQuantity(OrderId id) const;
 
