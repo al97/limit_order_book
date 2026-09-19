@@ -1,15 +1,23 @@
 #include "reference_book.hpp"
 
 #include <algorithm>
+#include <limits>
 #include <vector>
 
 namespace lob::ref {
 namespace {
 
+Quantity SaturatingAdd(Quantity left, Quantity right) {
+  if (right > std::numeric_limits<Quantity>::max() - left) {
+    return std::numeric_limits<Quantity>::max();
+  }
+  return left + right;
+}
+
 Quantity SumQuantity(const std::deque<Order>& orders) {
   Quantity quantity = 0;
   for (const Order& order : orders) {
-    quantity += order.quantity;
+    quantity = SaturatingAdd(quantity, order.quantity);
   }
   return quantity;
 }
@@ -84,6 +92,24 @@ bool ReferenceBook::Compatible(Side taker_side, PriceTicks taker_price,
   return maker_price >= taker_price;
 }
 
+template <class Levels>
+Quantity ReferenceBook::AvailableAgainst(const Levels& levels,
+                                         const NewOrder& taker) const {
+  Quantity available = 0;
+  for (const auto& [price, queue] : levels) {
+    if (!Compatible(taker.side, taker.price, price)) {
+      break;
+    }
+    for (const Order& order : queue) {
+      available = SaturatingAdd(available, order.quantity);
+      if (available >= taker.quantity) {
+        return available;
+      }
+    }
+  }
+  return available;
+}
+
 void ReferenceBook::Rest(const NewOrder& order, Quantity remaining) {
   const Order resting{order.id, order.side, order.price, remaining};
   if (order.side == Side::Buy) {
@@ -101,7 +127,8 @@ Quantity ReferenceBook::MatchAgainst(Levels& levels, const NewOrder& taker,
   std::vector<OrderId> filled_makers;
   while (remaining > 0 && !levels.empty()) {
     auto level = levels.begin();
-    if (!Compatible(taker.side, taker.price, level->first)) {
+    if (taker.tif != TimeInForce::Market &&
+        !Compatible(taker.side, taker.price, level->first)) {
       break;
     }
     auto& queue = level->second;
@@ -138,6 +165,16 @@ std::vector<Event> ReferenceBook::Submit(const NewOrder& order) {
                  RejectReason::DuplicateOrderId)};
   }
 
+  if (order.tif == TimeInForce::FOK) {
+    const Quantity available = order.side == Side::Buy
+                                   ? AvailableAgainst(asks_, order)
+                                   : AvailableAgainst(bids_, order);
+    if (available < order.quantity) {
+      return {Next(EventType::Rejected, order.id, 0, order.price, order.quantity,
+                   RejectReason::None)};
+    }
+  }
+
   std::vector<Event> events;
   events.push_back(Next(EventType::Accepted, order.id, 0, order.price,
                         order.quantity, RejectReason::None));
@@ -152,8 +189,20 @@ std::vector<Event> ReferenceBook::Submit(const NewOrder& order) {
   if (remaining == 0) {
     events.push_back(
         Next(EventType::Filled, order.id, 0, 0, 0, RejectReason::None));
-  } else {
-    Rest(order, remaining);
+    return events;
+  }
+
+  switch (order.tif) {
+    case TimeInForce::GTC:
+      Rest(order, remaining);
+      break;
+    case TimeInForce::IOC:
+    case TimeInForce::Market:
+      events.push_back(Next(EventType::Cancelled, order.id, 0, order.price,
+                            remaining, RejectReason::None));
+      break;
+    case TimeInForce::FOK:
+      break;
   }
   return events;
 }
