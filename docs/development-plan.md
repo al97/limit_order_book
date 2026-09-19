@@ -273,6 +273,19 @@ Work in parallel after Milestone 0 merges.
 - [ ] Prevent overflow during the FOK quantity check.
 - [ ] Confirm insufficient FOK cannot emit a partial trade.
 
+### Brian: reference time-in-force
+
+- [x] Implement IOC: match available quantity and cancel the remainder
+      ([PR #10](https://github.com/al97/limit_order_book/pull/10)).
+- [x] Implement Market: ignore a price cap and never rest
+      ([PR #10](https://github.com/al97/limit_order_book/pull/10)).
+- [x] Implement an FOK read-only liquidity pre-check
+      ([PR #10](https://github.com/al97/limit_order_book/pull/10)).
+- [x] Prevent overflow during the FOK quantity check
+      ([PR #10](https://github.com/al97/limit_order_book/pull/10)).
+- [x] Confirm insufficient FOK cannot emit a partial trade
+      ([PR #10](https://github.com/al97/limit_order_book/pull/10)).
+
 ### Brian: hardening
 
 - [ ] Add no-mutation assertions for all rejected commands.

@@ -26,6 +26,8 @@ class ReferenceBook {
   bool Compatible(Side taker_side, PriceTicks taker_price,
                   PriceTicks maker_price) const;
   template <class Levels>
+  Quantity AvailableAgainst(const Levels& levels, const NewOrder& taker) const;
+  template <class Levels>
   Quantity MatchAgainst(Levels& levels, const NewOrder& taker, Quantity remaining,
                         std::vector<Event>& events);
 
