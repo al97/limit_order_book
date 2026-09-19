@@ -222,9 +222,26 @@ Work in parallel after Milestone 0 merges.
 - [ ] Remove the price level when its final order is cancelled.
 - [ ] Test cancellation at the head, middle, and tail.
 
+### Brian: reference matching and cancellation
+
+- [x] Implement incoming-buy matching against the cheapest asks ([PR #9](https://github.com/al97/limit_order_book/pull/9)).
+- [x] Implement incoming-sell matching against the highest bids ([PR #9](https://github.com/al97/limit_order_book/pull/9)).
+- [x] Execute at the resting order's price ([PR #9](https://github.com/al97/limit_order_book/pull/9)).
+- [x] Handle complete maker fills ([PR #9](https://github.com/al97/limit_order_book/pull/9)).
+- [x] Handle partial maker fills without losing FIFO position ([PR #9](https://github.com/al97/limit_order_book/pull/9)).
+- [x] Rest a GTC taker's unfilled remainder ([PR #9](https://github.com/al97/limit_order_book/pull/9)).
+- [x] Sweep multiple acceptable price levels ([PR #9](https://github.com/al97/limit_order_book/pull/9)).
+- [x] Stop before the next unacceptable price ([PR #9](https://github.com/al97/limit_order_book/pull/9)).
+- [x] Remove empty levels and stale ID entries ([PR #9](https://github.com/al97/limit_order_book/pull/9)).
+- [x] Cancel a live order ([PR #9](https://github.com/al97/limit_order_book/pull/9)).
+- [x] Remove the order from its FIFO ([PR #9](https://github.com/al97/limit_order_book/pull/9)).
+- [x] Remove the ID-index entry ([PR #9](https://github.com/al97/limit_order_book/pull/9)).
+- [x] Remove the price level when its final order is cancelled ([PR #9](https://github.com/al97/limit_order_book/pull/9)).
+- [x] Test cancellation at the head, middle, and tail ([PR #9](https://github.com/al97/limit_order_book/pull/9)).
+
 ### Brian: differential verification
 
-- [ ] Assert exact event ordering, not only final BBO.
+- [x] Assert exact event ordering, not only final BBO ([PR #9](https://github.com/al97/limit_order_book/pull/9), reference goldens).
 - [ ] Generate deterministic add/cancel command streams.
 - [ ] Run each stream against production and reference books.
 - [ ] Compare trades, rejections, depth, BBO, and live-order quantities.
