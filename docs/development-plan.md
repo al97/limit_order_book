@@ -134,8 +134,10 @@ orders. Provider-specific code must not appear in the engine's public API.
 - [ ] Zero quantity rejects without mutation.
 - [ ] Unknown or already-filled cancellation returns `UnknownOrder`.
 - [ ] Trades occur at the resting maker's price.
-- [ ] A Market order never rests.
-- [ ] An insufficient FOK order creates no trades and no mutation.
+- [x] A Market order never rests
+      (reference, [PR #10](https://github.com/al97/limit_order_book/pull/10)).
+- [x] An insufficient FOK order creates no trades and no mutation
+      (reference, [PR #10](https://github.com/al97/limit_order_book/pull/10)).
 - [ ] Engine sequence, not wall-clock time, determines FIFO order.
 
 ### Shared golden scenarios
@@ -273,11 +275,27 @@ Work in parallel after Milestone 0 merges.
 - [ ] Prevent overflow during the FOK quantity check.
 - [ ] Confirm insufficient FOK cannot emit a partial trade.
 
+### Brian: reference time-in-force
+
+- [x] Implement IOC: match available quantity and cancel the remainder
+      ([PR #10](https://github.com/al97/limit_order_book/pull/10)).
+- [x] Implement Market: ignore a price cap and never rest
+      ([PR #10](https://github.com/al97/limit_order_book/pull/10)).
+- [x] Implement an FOK read-only liquidity pre-check
+      ([PR #10](https://github.com/al97/limit_order_book/pull/10)).
+- [x] Prevent overflow during the FOK quantity check
+      ([PR #10](https://github.com/al97/limit_order_book/pull/10)).
+- [x] Confirm insufficient FOK cannot emit a partial trade
+      ([PR #10](https://github.com/al97/limit_order_book/pull/10)).
+
 ### Brian: hardening
 
-- [ ] Add no-mutation assertions for all rejected commands.
-- [ ] Add empty-book and one-sided-book scenarios.
-- [ ] Add maximum-value boundary scenarios.
+- [x] Add no-mutation assertions for all rejected commands
+      ([PR #10](https://github.com/al97/limit_order_book/pull/10)).
+- [x] Add empty-book and one-sided-book scenarios
+      ([PR #10](https://github.com/al97/limit_order_book/pull/10)).
+- [x] Add maximum-value boundary scenarios
+      ([PR #10](https://github.com/al97/limit_order_book/pull/10)).
 - [ ] Expand randomized testing across all time-in-force values.
 - [ ] Add a debug invariant checker invocation after every generated command.
 - [ ] Run the test suite repeatedly under ASAN and UBSAN.
