@@ -73,6 +73,8 @@ const char* ReasonName(lob::RejectReason reason) {
       return "ZeroQuantity";
     case lob::RejectReason::UnknownOrder:
       return "UnknownOrder";
+    case lob::RejectReason::NotEnoughQuantity:
+      return "NotEnoughQuantity";
   }
   return "?";
 }
