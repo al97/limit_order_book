@@ -44,7 +44,7 @@ bool BookIsUncrossed(const ObservableSnapshot& snapshot);
 std::vector<TradeFact> TradesFrom(const std::vector<lob::Event>& events,
                                   lob::OrderId taker);
 
-enum class DiffKind { None, Reject, Trade, Cancel, Snapshot, Crossed };
+enum class DiffKind { None, Reject, Trade, Cancel, Snapshot, Crossed, Mutation, Invariant };
 
 struct StreamDiff {
   DiffKind kind = DiffKind::None;

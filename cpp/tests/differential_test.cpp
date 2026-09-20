@@ -23,6 +23,19 @@ int BuyPercent(Mix mix) {
   return 50;
 }
 
+lob::TimeInForce PickTif(int roll) {
+  if (roll < 60) {
+    return lob::TimeInForce::GTC;
+  }
+  if (roll < 75) {
+    return lob::TimeInForce::IOC;
+  }
+  if (roll < 90) {
+    return lob::TimeInForce::Market;
+  }
+  return lob::TimeInForce::FOK;
+}
+
 lob::test::Commands Generate(std::uint32_t seed, std::size_t length, Mix mix) {
   std::mt19937 rng(seed);
   std::uniform_int_distribution<int> percent(0, 99);
@@ -40,20 +53,23 @@ lob::test::Commands Generate(std::uint32_t seed, std::size_t length, Mix mix) {
     const int roll = percent(rng);
     if (!can_cancel || roll < 70) {
       const int kind = percent(rng);
+      const lob::TimeInForce tif = PickTif(percent(rng));
       if (kind < 3) {
-        commands.push_back(lob::test::SubmitGtc(next_id, lob::Side::Buy, price(rng), 0));
+        commands.push_back(lob::test::SubmitOrder(next_id, lob::Side::Buy, price(rng),
+                                                  0, tif));
         ++next_id;
       } else if (kind < 8 && !submitted.empty()) {
         const lob::OrderId dup =
             submitted[static_cast<std::size_t>(percent(rng)) % submitted.size()];
         const lob::Side side =
             percent(rng) < buy_percent ? lob::Side::Buy : lob::Side::Sell;
-        commands.push_back(lob::test::SubmitGtc(dup, side, price(rng), quantity(rng)));
+        commands.push_back(
+            lob::test::SubmitOrder(dup, side, price(rng), quantity(rng), tif));
       } else {
         const lob::Side side =
             percent(rng) < buy_percent ? lob::Side::Buy : lob::Side::Sell;
-        commands.push_back(
-            lob::test::SubmitGtc(next_id, side, price(rng), quantity(rng)));
+        commands.push_back(lob::test::SubmitOrder(next_id, side, price(rng),
+                                                  quantity(rng), tif));
         submitted.push_back(next_id);
         ++next_id;
       }

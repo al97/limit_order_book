@@ -49,6 +49,20 @@ const char* EventName(lob::EventType type) {
   return "?";
 }
 
+const char* TifName(lob::TimeInForce tif) {
+  switch (tif) {
+    case lob::TimeInForce::GTC:
+      return "GTC";
+    case lob::TimeInForce::FOK:
+      return "FOK";
+    case lob::TimeInForce::IOC:
+      return "IOC";
+    case lob::TimeInForce::Market:
+      return "Market";
+  }
+  return "?";
+}
+
 const char* ReasonName(lob::RejectReason reason) {
   switch (reason) {
     case lob::RejectReason::None:
@@ -109,13 +123,6 @@ std::optional<lob::OrderId> SubmitId(const lob::test::Command& command) {
   return std::nullopt;
 }
 
-std::optional<lob::OrderId> CancelId(const lob::test::Command& command) {
-  if (const auto* cancel = std::get_if<lob::test::CancelCommand>(&command)) {
-    return cancel->id;
-  }
-  return std::nullopt;
-}
-
 const lob::Event* FirstOf(const std::vector<lob::Event>& events, lob::EventType type) {
   for (const lob::Event& event : events) {
     if (event.type == type) {
@@ -133,7 +140,8 @@ std::string FormatCommand(const lob::test::Command& command) {
         if constexpr (std::is_same_v<T, lob::test::SubmitCommand>) {
           const lob::NewOrder& order = payload.order;
           out << "Submit " << SideName(order.side) << " id=" << order.id
-              << " price=" << order.price << " qty=" << order.quantity;
+              << " price=" << order.price << " qty=" << order.quantity
+              << " tif=" << TifName(order.tif);
         } else {
           out << "Cancel id=" << payload.id;
         }
@@ -263,6 +271,37 @@ bool BookIsUncrossed(const ObservableSnapshot& snapshot) {
   return snapshot.bid_top.price < snapshot.ask_top.price;
 }
 
+const char* InvariantFailure(const ObservableSnapshot& snapshot) {
+  if (!BookIsUncrossed(snapshot)) {
+    return "crossed or locked book";
+  }
+  if (snapshot.bids.empty()) {
+    if (snapshot.bid_top.quantity != 0) {
+      return "bid top present on empty bid depth";
+    }
+  } else if (!EqualLevel(snapshot.bid_top, snapshot.bids.front())) {
+    return "bid top does not match first depth level";
+  }
+  if (snapshot.asks.empty()) {
+    if (snapshot.ask_top.quantity != 0) {
+      return "ask top present on empty ask depth";
+    }
+  } else if (!EqualLevel(snapshot.ask_top, snapshot.asks.front())) {
+    return "ask top does not match first depth level";
+  }
+  for (const lob::LevelSnapshot& level : snapshot.bids) {
+    if (level.quantity == 0) {
+      return "empty bid level in depth";
+    }
+  }
+  for (const lob::LevelSnapshot& level : snapshot.asks) {
+    if (level.quantity == 0) {
+      return "empty ask level in depth";
+    }
+  }
+  return nullptr;
+}
+
 std::vector<TradeFact> TradesFrom(const std::vector<lob::Event>& events,
                                   lob::OrderId taker) {
   std::vector<TradeFact> trades;
@@ -286,9 +325,14 @@ StreamDiff FirstDiff(const lob::test::Commands& commands) {
 
   const ObservableSnapshot empty_prod = Capture(production, ids, kFullDepth);
   const ObservableSnapshot empty_ref = Capture(reference, ids, kFullDepth);
-  if (empty_prod != empty_ref || !BookIsUncrossed(empty_prod)) {
+  if (empty_prod != empty_ref) {
     diff.kind = DiffKind::Snapshot;
     diff.detail = "empty books disagree";
+    return diff;
+  }
+  if (const char* problem = InvariantFailure(empty_prod); problem != nullptr) {
+    diff.kind = DiffKind::Invariant;
+    diff.detail = problem;
     return diff;
   }
 
@@ -296,6 +340,8 @@ StreamDiff FirstDiff(const lob::test::Commands& commands) {
     diff.command_index = i;
     const lob::test::Command& command = commands[i];
     TrackId(ids, command);
+    const ObservableSnapshot before_prod = Capture(production, ids, kFullDepth);
+    const ObservableSnapshot before_ref = Capture(reference, ids, kFullDepth);
     const std::vector<lob::Event> production_events = Apply(production, command);
     const std::vector<lob::Event> reference_events = Apply(reference, command);
     const ObservableSnapshot production_snap = Capture(production, ids, kFullDepth);
@@ -317,6 +363,20 @@ StreamDiff FirstDiff(const lob::test::Commands& commands) {
       return diff;
     }
 
+    if (production_reject != nullptr) {
+      if (production_snap != before_prod || reference_snap != before_ref) {
+        diff.kind = DiffKind::Mutation;
+        std::ostringstream out;
+        out << "rejected command mutated the book at command " << i << "\n";
+        out << "production before:\n" << FormatSnapshot(before_prod);
+        out << "production after:\n" << FormatSnapshot(production_snap);
+        out << "reference before:\n" << FormatSnapshot(before_ref);
+        out << "reference after:\n" << FormatSnapshot(reference_snap);
+        diff.detail = out.str();
+        return diff;
+      }
+    }
+
     if (const auto taker = SubmitId(command); taker.has_value()) {
       const std::vector<TradeFact> production_trades =
           TradesFrom(production_events, *taker);
@@ -335,24 +395,22 @@ StreamDiff FirstDiff(const lob::test::Commands& commands) {
       }
     }
 
-    if (const auto id = CancelId(command); id.has_value()) {
-      const lob::Event* production_cancel =
-          FirstOf(production_events, lob::EventType::Cancelled);
-      const lob::Event* reference_cancel =
-          FirstOf(reference_events, lob::EventType::Cancelled);
-      if ((production_cancel == nullptr) != (reference_cancel == nullptr) ||
-          (production_cancel != nullptr &&
-           (production_cancel->orderId != reference_cancel->orderId ||
-            production_cancel->quantity != reference_cancel->quantity ||
-            production_cancel->price != reference_cancel->price))) {
-        diff.kind = DiffKind::Cancel;
-        std::ostringstream out;
-        out << "cancels disagree at command " << i << "\n";
-        out << "production events:\n" << FormatEvents(production_events);
-        out << "reference events:\n" << FormatEvents(reference_events);
-        diff.detail = out.str();
-        return diff;
-      }
+    const lob::Event* production_cancel =
+        FirstOf(production_events, lob::EventType::Cancelled);
+    const lob::Event* reference_cancel =
+        FirstOf(reference_events, lob::EventType::Cancelled);
+    if ((production_cancel == nullptr) != (reference_cancel == nullptr) ||
+        (production_cancel != nullptr &&
+         (production_cancel->orderId != reference_cancel->orderId ||
+          production_cancel->quantity != reference_cancel->quantity ||
+          production_cancel->price != reference_cancel->price))) {
+      diff.kind = DiffKind::Cancel;
+      std::ostringstream out;
+      out << "cancels disagree at command " << i << "\n";
+      out << "production events:\n" << FormatEvents(production_events);
+      out << "reference events:\n" << FormatEvents(reference_events);
+      diff.detail = out.str();
+      return diff;
     }
 
     if (production_snap != reference_snap) {
@@ -365,11 +423,19 @@ StreamDiff FirstDiff(const lob::test::Commands& commands) {
       return diff;
     }
 
-    if (!BookIsUncrossed(production_snap) || !BookIsUncrossed(reference_snap)) {
-      diff.kind = DiffKind::Crossed;
+    if (const char* problem = InvariantFailure(production_snap);
+        problem != nullptr) {
+      diff.kind = DiffKind::Invariant;
       std::ostringstream out;
-      out << "crossed or locked book at command " << i << "\n";
+      out << "invariant failed at command " << i << ": " << problem << "\n";
       out << "production:\n" << FormatSnapshot(production_snap);
+      diff.detail = out.str();
+      return diff;
+    }
+    if (const char* problem = InvariantFailure(reference_snap); problem != nullptr) {
+      diff.kind = DiffKind::Invariant;
+      std::ostringstream out;
+      out << "invariant failed at command " << i << ": " << problem << "\n";
       out << "reference:\n" << FormatSnapshot(reference_snap);
       diff.detail = out.str();
       return diff;
