@@ -23,11 +23,9 @@ Owners:
 
 ## Current status
 
-- [ ] Milestone 0: Shared contracts and scaffolding
-- [x] Milestone 1: Resting book and reference model
 - [x] Milestone 0: Shared contracts and scaffolding
 - [x] Milestone 1: Resting book and reference model
-- [ ] Milestone 2: Matching, cancellation, and differential tests
+- [ ] Milestone 2: Matching, cancellation, and differential tests (Albert production tasks done on `engine/matching-cancel`; exit gate pending)
 - [ ] Milestone 3: Time-in-force and hardening
 - [ ] Optional Milestone 4: Real-world market-data replay
 - [ ] Optional Milestone 5: Benchmarks and final demonstration
@@ -67,9 +65,9 @@ orders. Provider-specific code must not appear in the engine's public API.
 - [x] Own `include/lob/order_book.hpp` ([PR #2](https://github.com/al97/limit_order_book/pull/2), [PR #5](https://github.com/al97/limit_order_book/pull/5)).
 - [x] Own `src/order_book.cpp` ([PR #2](https://github.com/al97/limit_order_book/pull/2), [PR #5](https://github.com/al97/limit_order_book/pull/5)).
 - [x] Implement integer ticks and quantities ([PR #2](https://github.com/al97/limit_order_book/pull/2)).
-- [ ] Implement price-time matching at the resting order's price.
-- [ ] Implement active cancellation.
-- [ ] Implement GTC, IOC, Market, and FOK behavior.
+- [x] Implement price-time matching at the resting order's price (`engine/matching-cancel`).
+- [x] Implement active cancellation (`engine/matching-cancel`).
+- [ ] Implement GTC, IOC, Market, and FOK behavior (GTC rest/match in Submit; IOC/Market/FOK in Milestone 3).
 - [x] Add implementation-local unit tests with each production change ([PR #2](https://github.com/al97/limit_order_book/pull/2), [PR #5](https://github.com/al97/limit_order_book/pull/5)).
 - [ ] Add benchmarks only after all correctness gates pass.
 
@@ -130,13 +128,13 @@ orders. Provider-specific code must not appear in the engine's public API.
 
 ### Locked behavior
 
-- [ ] Duplicate order ID rejects without mutation.
-- [ ] Zero quantity rejects without mutation.
-- [ ] Unknown or already-filled cancellation returns `UnknownOrder`.
-- [ ] Trades occur at the resting maker's price.
+- [x] Duplicate order ID rejects without mutation (`engine/matching-cancel`).
+- [x] Zero quantity rejects without mutation (`engine/matching-cancel`).
+- [x] Unknown or already-filled cancellation returns `UnknownOrder` (unknown ID in Cancel; filled ID covered by reference tests).
+- [x] Trades occur at the resting maker's price (`engine/matching-cancel`).
 - [ ] A Market order never rests.
 - [ ] An insufficient FOK order creates no trades and no mutation.
-- [ ] Engine sequence, not wall-clock time, determines FIFO order.
+- [x] Engine sequence, not wall-clock time, determines FIFO order (FIFO lists + monotonic event sequence).
 
 ### Shared golden scenarios
 
@@ -203,24 +201,24 @@ Work in parallel after Milestone 0 merges.
 
 ### Albert: matching
 
-- [ ] Implement incoming-buy matching against the cheapest asks.
-- [ ] Implement incoming-sell matching against the highest bids.
-- [ ] Execute at the resting order's price.
-- [ ] Handle complete maker fills.
-- [ ] Handle partial maker fills without losing FIFO position.
-- [ ] Rest a GTC taker's unfilled remainder.
-- [ ] Sweep multiple acceptable price levels.
-- [ ] Stop before the next unacceptable price.
-- [ ] Remove empty levels and stale ID entries.
+- [x] Implement incoming-buy matching against the cheapest asks (`engine/matching-cancel`).
+- [x] Implement incoming-sell matching against the highest bids (`engine/matching-cancel`).
+- [x] Execute at the resting order's price (`engine/matching-cancel`).
+- [x] Handle complete maker fills (`engine/matching-cancel`).
+- [x] Handle partial maker fills without losing FIFO position (`engine/matching-cancel`).
+- [x] Rest a GTC taker's unfilled remainder (`engine/matching-cancel`).
+- [x] Sweep multiple acceptable price levels (`engine/matching-cancel`).
+- [x] Stop before the next unacceptable price (`engine/matching-cancel`).
+- [x] Remove empty levels and stale ID entries (`engine/matching-cancel`).
 
 ### Albert: active cancellation
 
-- [ ] Cancel a live order through its ID locator.
-- [ ] Update the price-level total.
-- [ ] Remove the order from its FIFO.
-- [ ] Remove the ID-index entry.
-- [ ] Remove the price level when its final order is cancelled.
-- [ ] Test cancellation at the head, middle, and tail.
+- [x] Cancel a live order through its ID locator (`engine/matching-cancel`).
+- [x] Update the price-level total (aggregated on query; level removed when empty) (`engine/matching-cancel`).
+- [x] Remove the order from its FIFO (`engine/matching-cancel`).
+- [x] Remove the ID-index entry (`engine/matching-cancel`).
+- [x] Remove the price level when its final order is cancelled (`engine/matching-cancel`).
+- [x] Test cancellation at the head, middle, and tail (`cpp/tests/order_book_test.cpp`, `TestCancel`).
 
 ### Brian: reference matching and cancellation
 

@@ -36,8 +36,8 @@ Command: Submit Buy id=3, price=100, qty=4, GTC
 Expected events:
   Accepted(id=3)
   Trade(maker=1, taker=3, price=100, qty=3) // id=1 first (FIFO)
-  Trade(maker=2, taker=3, price=100, qty=1) // then partial from id=2
   Filled(id=1)
+  Trade(maker=2, taker=3, price=100, qty=1) // then partial from id=2
   Filled(id=3)
 
 Expected final state:

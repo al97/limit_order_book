@@ -21,6 +21,13 @@ namespace lob {
       std::map<PriceTicks, std::list<Order>> sellSideMap;
       std::map<PriceTicks, std::list<Order>, std::greater<PriceTicks>> buySideMap;
       std::map<OrderId, std::list<Order>::iterator> locator;
+      Event Emit(EventType type, OrderId order_id, OrderId counter_id = 0,
+                 PriceTicks price = 0, Quantity quantity = 0,
+                 RejectReason reason = RejectReason::None);
+      Sequence sequence_{0};
+      Sequence next_seq() { return ++sequence_; }
 
+      template <typename SideMap>
+      MatchAgainst(SideMap& opposite_map)
   };
 }

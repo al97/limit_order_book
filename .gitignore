@@ -1,4 +1,5 @@
 /build/
+/build-*/
 /cpp/build/
 /.vscode/
 .DS_Store
