@@ -26,8 +26,5 @@ namespace lob {
                  RejectReason reason = RejectReason::None);
       Sequence sequence_{0};
       Sequence next_seq() { return ++sequence_; }
-
-      template <typename SideMap>
-      MatchAgainst(SideMap& opposite_map)
   };
 }

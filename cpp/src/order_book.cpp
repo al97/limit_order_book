@@ -1,4 +1,5 @@
 #include "lob/order_book.hpp"
+#include <limits>
 
 namespace lob {
 
@@ -25,14 +26,67 @@ std::vector<Event> OrderBook::Submit(const NewOrder& order) {
                           0, order.price, order.quantity, RejectReason::DuplicateOrderId));
     return events;
   }
+  // Before accepting for FOK - need to find out if we have enough to FILL.
+  if (order.tif == TimeInForce::FOK) {
+    if (order.side == Side::Buy) {
+      Quantity available = 0;
+      auto it = sellSideMap.begin();
+      while (available < order.quantity && it != sellSideMap.end() && it->first <= order.price) {
+        auto& queue = it->second;
+        auto opp_it = queue.begin();
+        // now walk through the queue
+        while (available < order.quantity && opp_it != queue.end()) {
+          Order& opp = *opp_it;
+          if (__builtin_add_overflow(available, opp.quantity, &available)) {
+            available = order.quantity;
+            break;
+          }
+          ++opp_it;
+        }
+        ++it;
+      }
+      if (available < order.quantity) {
+        events.push_back(Emit(EventType::Rejected, order.id,
+                              0, order.price, order.quantity, RejectReason::NotEnoughQuantity));
+        return events;
+      }
+    } else {
+      Quantity available = 0;
+      auto it = buySideMap.begin();
+      while (available < order.quantity && it != buySideMap.end() && it->first >= order.price) {
+        auto& queue = it->second;
+        auto opp_it = queue.begin();
+        // now walk through the queue
+        while (available < order.quantity && opp_it != queue.end()) {
+          Order& opp = *opp_it;
+          if (__builtin_add_overflow(available, opp.quantity, &available)) {
+            available = order.quantity;
+            break;
+          }
+          ++opp_it;
+        }
+        ++it;
+      }
+      if (available < order.quantity) {
+        events.push_back(Emit(EventType::Rejected, order.id,
+                              0, order.price, order.quantity, RejectReason::NotEnoughQuantity));
+        return events;
+      }
+    }
+  }
 
   // Accept the order!
   events.push_back(Emit(EventType::Accepted, order.id, 0, order.price, order.quantity));
 
   // Match against opposite side
+  PriceTicks limit = order.price;
+  if (order.tif == TimeInForce::Market) {
+    limit = (order.side == Side::Buy) ? std::numeric_limits<PriceTicks>::max() :
+                                        std::numeric_limits<PriceTicks>::min();
+  }
   if (order.side == Side::Buy) {
     Quantity remaining = order.quantity;
-    while (remaining > 0 && !sellSideMap.empty() && Top(Side::Sell).price <= order.price) {
+    while (remaining > 0 && !sellSideMap.empty() && Top(Side::Sell).price <= limit) {
       // take fromt front of best ask queue in each iteration
       auto it = sellSideMap.begin();
       PriceTicks price = it->first;
@@ -78,10 +132,12 @@ std::vector<Event> OrderBook::Submit(const NewOrder& order) {
     // Rest GTC
     if (remaining > 0 && order.tif == TimeInForce::GTC) {
       AddOrder({order.id, order.side, order.price, remaining});
+    } else if (remaining > 0 && (order.tif == TimeInForce::IOC || order.tif == TimeInForce::Market)) {
+      events.push_back(Emit(EventType::Cancelled, order.id, 0, order.price, remaining));
     }
   } else {
     Quantity remaining = order.quantity;
-    while (remaining > 0 && !buySideMap.empty() && Top(Side::Buy).price >= order.price) {
+    while (remaining > 0 && !buySideMap.empty() && Top(Side::Buy).price >= limit) {
       // take fromt front of best bid queue in each iteration
       auto it = buySideMap.begin();
       PriceTicks price = it->first;
@@ -127,7 +183,10 @@ std::vector<Event> OrderBook::Submit(const NewOrder& order) {
     // Rest GTC
     if (remaining > 0 && order.tif == TimeInForce::GTC) {
       AddOrder({order.id, order.side, order.price, remaining});
-    }
+    } else if (remaining > 0 && (order.tif == TimeInForce::IOC || order.tif == TimeInForce::Market)) {
+      events.push_back(Emit(EventType::Cancelled, order.id, 0, order.price, remaining));
+    } 
+
   }
 
   // Return events
