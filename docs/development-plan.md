@@ -25,8 +25,8 @@ Owners:
 
 - [x] Milestone 0: Shared contracts and scaffolding
 - [x] Milestone 1: Resting book and reference model
-- [ ] Milestone 2: Matching, cancellation, and differential tests (Albert production tasks done on `engine/matching-cancel`; exit gate pending)
-- [ ] Milestone 3: Time-in-force and hardening
+- [ ] Milestone 2: Matching, cancellation, and differential tests (Albert production complete; exit gate: random diff + sanitizers pending)
+- [ ] Milestone 3: Time-in-force and hardening (Albert production complete; Brian hardening + MVP exit gate pending)
 - [ ] Optional Milestone 4: Real-world market-data replay
 - [ ] Optional Milestone 5: Benchmarks and final demonstration
 
@@ -67,7 +67,7 @@ orders. Provider-specific code must not appear in the engine's public API.
 - [x] Implement integer ticks and quantities ([PR #2](https://github.com/al97/limit_order_book/pull/2)).
 - [x] Implement price-time matching at the resting order's price (`engine/matching-cancel`).
 - [x] Implement active cancellation (`engine/matching-cancel`).
-- [ ] Implement GTC, IOC, Market, and FOK behavior (GTC rest/match in Submit; IOC/Market/FOK in Milestone 3).
+- [x] Implement GTC, IOC, Market, and FOK behavior (`engine/matching-cancel`, `TestTICTypes`).
 - [x] Add implementation-local unit tests with each production change ([PR #2](https://github.com/al97/limit_order_book/pull/2), [PR #5](https://github.com/al97/limit_order_book/pull/5)).
 - [ ] Add benchmarks only after all correctness gates pass.
 
@@ -132,8 +132,8 @@ orders. Provider-specific code must not appear in the engine's public API.
 - [x] Zero quantity rejects without mutation (`engine/matching-cancel`).
 - [x] Unknown or already-filled cancellation returns `UnknownOrder` (unknown ID in Cancel; filled ID covered by reference tests).
 - [x] Trades occur at the resting maker's price (`engine/matching-cancel`).
-- [ ] A Market order never rests.
-- [ ] An insufficient FOK order creates no trades and no mutation.
+- [x] A Market order never rests (`engine/matching-cancel`).
+- [x] An insufficient FOK order creates no trades and no mutation (`engine/matching-cancel`, `NotEnoughQuantity`).
 - [x] Engine sequence, not wall-clock time, determines FIFO order (FIFO lists + monotonic event sequence).
 
 ### Shared golden scenarios
@@ -265,11 +265,11 @@ Work in parallel after Milestone 0 merges.
 
 ### Albert: remaining order behavior
 
-- [ ] Implement IOC: match available quantity and cancel the remainder.
-- [ ] Implement Market: ignore a price cap and never rest.
-- [ ] Implement an FOK read-only liquidity pre-check.
-- [ ] Prevent overflow during the FOK quantity check.
-- [ ] Confirm insufficient FOK cannot emit a partial trade.
+- [x] Implement IOC: match available quantity and cancel the remainder (`engine/matching-cancel`).
+- [x] Implement Market: ignore a price cap and never rest (`engine/matching-cancel`).
+- [x] Implement an FOK read-only liquidity pre-check (`engine/matching-cancel`).
+- [x] Prevent overflow during the FOK quantity check (`__builtin_add_overflow` in pre-check).
+- [x] Confirm insufficient FOK cannot emit a partial trade (`TestTICTypes`, `reference_book_test`).
 
 ### Brian: reference time-in-force
 
@@ -304,7 +304,7 @@ Work in parallel after Milestone 0 merges.
 
 ### MVP exit gate
 
-- [ ] GTC, IOC, Market, FOK, and cancellation have golden tests.
+- [x] GTC, IOC, Market, FOK, and cancellation have golden tests (`order_book_test`, `golden_scenarios.md`, `reference_book_test`; production TIF in `TestTICTypes`).
 - [ ] Random differential tests pass with fixed seeds.
 - [ ] All invariants hold after every command.
 - [ ] ASAN and UBSAN pass.

@@ -172,6 +172,50 @@ void TestCancel() {
   assert(book.Top(lob::Side::Buy).quantity == 0);
 }
 
+void TestTICTypes() {
+  lob::OrderBook book;
+  const lob::NewOrder buy = {1, lob::Side::Buy, 100, 15, lob::TimeInForce::IOC};
+  const lob::NewOrder sell = {2, lob::Side::Sell, 100, 10, lob::TimeInForce::GTC};
+  book.Submit(sell);
+  // IOC
+  std::vector<lob::Event> events = book.Submit(buy);
+  // make sure the remaining quantity is cancelled and not left in the book
+  assert(events[events.size() - 1].type == lob::EventType::Cancelled);
+  assert(book.GetRestingQuantity(1) == 0);
+  assert(book.GetRestingQuantity(2) == 0);
+
+  // Market
+  const lob::NewOrder lower = {4, lob::Side::Buy, 100, 10, lob::TimeInForce::GTC};
+  const lob::NewOrder equal = {5, lob::Side::Buy, 150, 5, lob::TimeInForce::GTC};
+  const lob::NewOrder higher = {6, lob::Side::Buy, 200, 6, lob::TimeInForce::GTC};
+
+  book.Submit(lower);
+  book.Submit(equal);
+  book.Submit(higher);
+
+  const lob::NewOrder market = {3, lob::Side::Sell, 100, 22, lob::TimeInForce::Market};
+
+  std::vector<lob::Event> events_market = book.Submit(market);
+  // All orders were bought, even the higher stuff
+  assert(book.GetRestingQuantity(4) == 0);
+  assert(book.GetRestingQuantity(5) == 0);
+  assert(book.GetRestingQuantity(6) == 0);
+  // but our remaining stock was not bought since we hit our quota and the rest is cancelled
+  assert(events_market[events_market.size() - 1].type == lob::EventType::Cancelled);
+  // FOK - if not enough stock, does not buy
+  const lob::NewOrder trying = {7, lob::Side::Buy, 100, 20, lob::TimeInForce::FOK};
+  const lob::NewOrder sell_stock = {8, lob::Side::Sell, 100, 10, lob::TimeInForce::GTC};
+  const lob::NewOrder sell_stock1 = {9, lob::Side::Sell, 100, 5, lob::TimeInForce::GTC};
+
+  book.Submit(sell_stock);
+  book.Submit(sell_stock1);
+
+  std::vector<lob::Event> events_fok = book.Submit(trying);
+  assert(events_fok[events_fok.size() - 1].type == lob::EventType::Rejected);
+  assert(events_fok[events_fok.size() - 1].reason == lob::RejectReason::NotEnoughQuantity);
+
+}
+
 int main() {
   TestEmptyBook();
   TestOneAddedOrder();
@@ -184,5 +228,6 @@ int main() {
   TestSubmit();
   TestSubmitGolden3();
   TestCancel();
+  TestTICTypes();
   return 0;
 }
