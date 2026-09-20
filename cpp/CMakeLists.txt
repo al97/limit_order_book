@@ -53,6 +53,21 @@ add_test(
   COMMAND agree_test
 )
 
-target_include_directories(agree_test PRIVATE include)
+target_include_directories(agree_test PRIVATE include tests)
 target_compile_features(agree_test PRIVATE cxx_std_20)
 target_link_libraries(agree_test PRIVATE lob)
+
+add_executable(differential_test
+  tests/reference_book.cpp
+  tests/snapshot.cpp
+  tests/differential_test.cpp
+)
+
+add_test(
+  NAME differential_test
+  COMMAND differential_test
+)
+
+target_include_directories(differential_test PRIVATE include tests)
+target_compile_features(differential_test PRIVATE cxx_std_20)
+target_link_libraries(differential_test PRIVATE lob)

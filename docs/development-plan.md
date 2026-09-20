@@ -25,8 +25,8 @@ Owners:
 
 - [x] Milestone 0: Shared contracts and scaffolding
 - [x] Milestone 1: Resting book and reference model
-- [ ] Milestone 2: Matching, cancellation, and differential tests (Albert production complete; exit gate: random diff + sanitizers pending)
-- [ ] Milestone 3: Time-in-force and hardening (Albert production complete; Brian hardening + MVP exit gate pending)
+- [x] Milestone 2: Matching, cancellation, and differential tests (`engine/matching-cancel`, `test/m2-differential`)
+- [x] Milestone 3: Time-in-force and hardening (`test/fuzz-hardening`)
 - [ ] Optional Milestone 4: Real-world market-data replay
 - [ ] Optional Milestone 5: Benchmarks and final demonstration
 
@@ -67,19 +67,19 @@ orders. Provider-specific code must not appear in the engine's public API.
 - [x] Implement integer ticks and quantities ([PR #2](https://github.com/al97/limit_order_book/pull/2)).
 - [x] Implement price-time matching at the resting order's price (`engine/matching-cancel`).
 - [x] Implement active cancellation (`engine/matching-cancel`).
-- [x] Implement GTC, IOC, Market, and FOK behavior (`engine/matching-cancel`, `TestTICTypes`).
+- [x] Implement GTC, IOC, Market, and FOK behavior (`engine/matching-cancel`, `test/fuzz-hardening`).
 - [x] Add implementation-local unit tests with each production change ([PR #2](https://github.com/al97/limit_order_book/pull/2), [PR #5](https://github.com/al97/limit_order_book/pull/5)).
 - [ ] Add benchmarks only after all correctness gates pass.
 
 ### Brian: independent verification
 
 - [x] Own `tests/reference_book.*` ([PR #6](https://github.com/al97/limit_order_book/pull/6)).
-- [ ] Own `tests/scenarios/`.
-- [ ] Own randomized and differential test infrastructure.
-- [ ] Own sanitizer and CI integration.
+- [x] Own `tests/scenarios/` (`cpp/tests/scenarios/worked_examples.hpp`).
+- [x] Own randomized and differential test infrastructure (`test/m2-differential`).
+- [x] Own sanitizer and CI integration ([PR #3](https://github.com/al97/limit_order_book/pull/3)).
 - [x] Keep the reference model deliberately simple ([PR #6](https://github.com/al97/limit_order_book/pull/6)).
 - [x] Do not reuse production matching functions or private containers ([PR #6](https://github.com/al97/limit_order_book/pull/6)).
-- [ ] Persist failing random seeds so failures are reproducible.
+- [x] Persist failing random seeds so failures are reproducible (`failing_seed.txt` plus stderr).
 
 ### Brian: market-data integration
 
@@ -132,8 +132,8 @@ orders. Provider-specific code must not appear in the engine's public API.
 - [x] Zero quantity rejects without mutation (`engine/matching-cancel`).
 - [x] Unknown or already-filled cancellation returns `UnknownOrder` (unknown ID in Cancel; filled ID covered by reference tests).
 - [x] Trades occur at the resting maker's price (`engine/matching-cancel`).
-- [x] A Market order never rests (`engine/matching-cancel`).
-- [x] An insufficient FOK order creates no trades and no mutation (`engine/matching-cancel`, `NotEnoughQuantity`).
+- [x] A Market order never rests (`test/fuzz-hardening`).
+- [x] An insufficient FOK order creates no trades and no mutation (`test/fuzz-hardening`).
 - [x] Engine sequence, not wall-clock time, determines FIFO order (FIFO lists + monotonic event sequence).
 
 ### Shared golden scenarios
@@ -240,19 +240,19 @@ Work in parallel after Milestone 0 merges.
 ### Brian: differential verification
 
 - [x] Assert exact event ordering, not only final BBO ([PR #9](https://github.com/al97/limit_order_book/pull/9), reference goldens).
-- [ ] Generate deterministic add/cancel command streams.
-- [ ] Run each stream against production and reference books.
-- [ ] Compare trades, rejections, depth, BBO, and live-order quantities.
-- [ ] Save any failing seed and minimized command sequence.
-- [ ] Run both buy- and sell-heavy distributions.
+- [x] Generate deterministic add/cancel command streams (`test/m2-differential`).
+- [x] Run each stream against production and reference books (`test/m2-differential`).
+- [x] Compare trades, rejections, depth, BBO, and live-order quantities (`test/m2-differential`).
+- [x] Save any failing seed and minimized command sequence (`failing_seed.txt`).
+- [x] Run both buy- and sell-heavy distributions (`test/m2-differential`).
 
 ### Exit gate
 
-- [ ] All worked examples in the explanatory docs pass.
-- [ ] Production and reference results agree for deterministic random seeds.
-- [ ] No crossed or locked book survives a command.
-- [ ] Cancellation never changes the relative order of surviving orders.
-- [ ] Sanitizer jobs pass.
+- [x] All worked examples in the explanatory docs pass (`agree_test`).
+- [x] Production and reference results agree for deterministic random seeds (`differential_test`).
+- [x] No crossed or locked book survives a command (`agree_test`, `differential_test`).
+- [x] Cancellation never changes the relative order of surviving orders (`agree_test` FIFO after cancel).
+- [x] Sanitizer jobs pass.
 
 ## Milestone 3: Time-in-force and hardening
 
@@ -265,11 +265,11 @@ Work in parallel after Milestone 0 merges.
 
 ### Albert: remaining order behavior
 
-- [x] Implement IOC: match available quantity and cancel the remainder (`engine/matching-cancel`).
-- [x] Implement Market: ignore a price cap and never rest (`engine/matching-cancel`).
-- [x] Implement an FOK read-only liquidity pre-check (`engine/matching-cancel`).
-- [x] Prevent overflow during the FOK quantity check (`__builtin_add_overflow` in pre-check).
-- [x] Confirm insufficient FOK cannot emit a partial trade (`TestTICTypes`, `reference_book_test`).
+- [x] Implement IOC: match available quantity and cancel the remainder (`test/fuzz-hardening`).
+- [x] Implement Market: ignore a price cap and never rest (`test/fuzz-hardening`).
+- [x] Implement an FOK read-only liquidity pre-check (`test/fuzz-hardening`).
+- [x] Prevent overflow during the FOK quantity check (`test/fuzz-hardening`).
+- [x] Confirm insufficient FOK cannot emit a partial trade (`test/fuzz-hardening`).
 
 ### Brian: reference time-in-force
 
@@ -286,29 +286,29 @@ Work in parallel after Milestone 0 merges.
 
 ### Brian: hardening
 
-- [ ] Add no-mutation assertions for all rejected commands.
-- [ ] Add empty-book and one-sided-book scenarios.
-- [ ] Add maximum-value boundary scenarios.
-- [ ] Expand randomized testing across all time-in-force values.
-- [ ] Add a debug invariant checker invocation after every generated command.
-- [ ] Run the test suite repeatedly under ASAN and UBSAN.
-- [ ] Document how to reproduce every randomized failure.
+- [x] Add no-mutation assertions for all rejected commands (`test/fuzz-hardening`).
+- [x] Add empty-book and one-sided-book scenarios (`test/fuzz-hardening`).
+- [x] Add maximum-value boundary scenarios (`test/fuzz-hardening`).
+- [x] Expand randomized testing across all time-in-force values (`test/fuzz-hardening`).
+- [x] Add a debug invariant checker invocation after every generated command (`test/fuzz-hardening`).
+- [x] Run the test suite repeatedly under ASAN and UBSAN.
+- [x] Document how to reproduce every randomized failure (`README.md`).
 
 ### Both: MVP documentation
 
-- [ ] Update the README with the architecture and build commands.
-- [ ] Add one complete submit/match/cancel example.
-- [ ] State clearly that the project is a learning engine, not a production
+- [x] Update the README with the architecture and build commands.
+- [x] Add one complete submit/match/cancel example.
+- [x] State clearly that the project is a learning engine, not a production
       exchange.
-- [ ] Document unsupported behavior.
+- [x] Document unsupported behavior.
 
 ### MVP exit gate
 
-- [x] GTC, IOC, Market, FOK, and cancellation have golden tests (`order_book_test`, `golden_scenarios.md`, `reference_book_test`; production TIF in `TestTICTypes`).
-- [ ] Random differential tests pass with fixed seeds.
-- [ ] All invariants hold after every command.
-- [ ] ASAN and UBSAN pass.
-- [ ] A fresh clone builds and tests with one documented command.
+- [x] GTC, IOC, Market, FOK, and cancellation have golden tests.
+- [x] Random differential tests pass with fixed seeds.
+- [x] All invariants hold after every command.
+- [x] ASAN and UBSAN pass.
+- [x] A fresh clone builds and tests with one documented command.
 - [ ] Each contributor has reviewed the other's work.
 
 At this point, the core project is complete enough to discuss in interviews.
