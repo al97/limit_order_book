@@ -57,4 +57,46 @@ inline Commands CancelHeadMiddleTail() {
   };
 }
 
+inline Commands GoldenIocCancelsRemainder() {
+  return {
+      SubmitGtc(1, lob::Side::Sell, 100, 3),
+      SubmitOrder(2, lob::Side::Buy, 101, 10, lob::TimeInForce::IOC),
+  };
+}
+
+inline Commands GoldenMarketIgnoresPrice() {
+  return {
+      SubmitGtc(1, lob::Side::Sell, 100, 3),
+      SubmitGtc(2, lob::Side::Sell, 110, 5),
+      SubmitOrder(3, lob::Side::Buy, 1, 10, lob::TimeInForce::Market),
+  };
+}
+
+inline Commands GoldenFokRejectsWithoutMutation() {
+  return {
+      SubmitGtc(1, lob::Side::Sell, 100, 3),
+      SubmitGtc(2, lob::Side::Sell, 110, 5),
+      SubmitOrder(3, lob::Side::Buy, 101, 8, lob::TimeInForce::FOK),
+  };
+}
+
+inline Commands EmptyBookIoc() {
+  return {SubmitOrder(1, lob::Side::Buy, 100, 10, lob::TimeInForce::IOC)};
+}
+
+inline Commands EmptyBookMarket() {
+  return {SubmitOrder(1, lob::Side::Sell, 50, 8, lob::TimeInForce::Market)};
+}
+
+inline Commands EmptyBookFok() {
+  return {SubmitOrder(1, lob::Side::Buy, 100, 4, lob::TimeInForce::FOK)};
+}
+
+inline Commands OneSidedIocLeavesOpposite() {
+  return {
+      SubmitGtc(1, lob::Side::Buy, 100, 5),
+      SubmitOrder(2, lob::Side::Buy, 101, 4, lob::TimeInForce::IOC),
+  };
+}
+
 }  // namespace lob::test

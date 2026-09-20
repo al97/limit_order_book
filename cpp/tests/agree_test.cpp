@@ -1,3 +1,4 @@
+#include <limits>
 #include <type_traits>
 #include <variant>
 #include <vector>
@@ -145,6 +146,44 @@ void TestUnknownAndDuplicateRejects() {
   });
 }
 
+void TestGoldenIocCancelsRemainder() {
+  RequireStream(lob::test::GoldenIocCancelsRemainder());
+  ExpectResting(lob::test::GoldenIocCancelsRemainder(), 2, 0,
+                "ioc remainder must not rest");
+}
+
+void TestGoldenMarketIgnoresPrice() {
+  RequireStream(lob::test::GoldenMarketIgnoresPrice());
+  ExpectResting(lob::test::GoldenMarketIgnoresPrice(), 3, 0,
+                "market remainder must not rest");
+}
+
+void TestGoldenFokRejectsWithoutMutation() {
+  RequireStream(lob::test::GoldenFokRejectsWithoutMutation());
+  ExpectResting(lob::test::GoldenFokRejectsWithoutMutation(), 1, 3,
+                "insufficient fok must leave maker 1");
+  ExpectResting(lob::test::GoldenFokRejectsWithoutMutation(), 2, 5,
+                "insufficient fok must leave maker 2");
+}
+
+void TestEmptyAndOneSidedBooks() {
+  RequireStream(lob::test::EmptyBookIoc());
+  RequireStream(lob::test::EmptyBookMarket());
+  RequireStream(lob::test::EmptyBookFok());
+  RequireStream(lob::test::OneSidedIocLeavesOpposite());
+  ExpectResting(lob::test::OneSidedIocLeavesOpposite(), 1, 5,
+                "one-sided ioc must leave the resting bid");
+}
+
+void TestFokOverflowDoesNotWrapAvailability() {
+  const lob::Quantity huge = std::numeric_limits<lob::Quantity>::max() / 2 + 10;
+  RequireStream({
+      lob::test::SubmitGtc(1, lob::Side::Sell, 100, huge),
+      lob::test::SubmitGtc(2, lob::Side::Sell, 101, huge),
+      lob::test::SubmitOrder(3, lob::Side::Buy, 101, 100, lob::TimeInForce::FOK),
+  });
+}
+
 int main() {
   TestGoldenNonCrossingRest();
   TestBidAndAskPriceOrder();
@@ -159,5 +198,10 @@ int main() {
   TestTechnicalNumericExample();
   TestCancelPreservesSurvivorFifo();
   TestUnknownAndDuplicateRejects();
+  TestGoldenIocCancelsRemainder();
+  TestGoldenMarketIgnoresPrice();
+  TestGoldenFokRejectsWithoutMutation();
+  TestEmptyAndOneSidedBooks();
+  TestFokOverflowDoesNotWrapAvailability();
   return 0;
 }

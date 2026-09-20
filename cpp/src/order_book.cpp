@@ -1,6 +1,45 @@
 #include "lob/order_book.hpp"
 
+#include <limits>
+
 namespace lob {
+namespace {
+
+Quantity SaturatingAdd(Quantity left, Quantity right) {
+  if (right > std::numeric_limits<Quantity>::max() - left) {
+    return std::numeric_limits<Quantity>::max();
+  }
+  return left + right;
+}
+
+bool Compatible(const NewOrder& order, PriceTicks maker_price) {
+  if (order.tif == TimeInForce::Market) {
+    return true;
+  }
+  if (order.side == Side::Buy) {
+    return maker_price <= order.price;
+  }
+  return maker_price >= order.price;
+}
+
+template <class Levels>
+Quantity AvailableAgainst(const Levels& levels, const NewOrder& taker) {
+  Quantity available = 0;
+  for (const auto& [price, queue] : levels) {
+    if (!Compatible(taker, price)) {
+      break;
+    }
+    for (const Order& resting : queue) {
+      available = SaturatingAdd(available, resting.quantity);
+      if (available >= taker.quantity) {
+        return available;
+      }
+    }
+  }
+  return available;
+}
+
+}  // namespace
 
 Event OrderBook::Emit(EventType type, OrderId order_id, OrderId counter_id,
   PriceTicks price, Quantity quantity, RejectReason reason) {
@@ -26,13 +65,25 @@ std::vector<Event> OrderBook::Submit(const NewOrder& order) {
     return events;
   }
 
+  if (order.tif == TimeInForce::FOK) {
+    const Quantity available = order.side == Side::Buy
+                                   ? AvailableAgainst(sellSideMap, order)
+                                   : AvailableAgainst(buySideMap, order);
+    if (available < order.quantity) {
+      events.push_back(Emit(EventType::Rejected, order.id, 0, order.price,
+                            order.quantity, RejectReason::None));
+      return events;
+    }
+  }
+
   // Accept the order!
   events.push_back(Emit(EventType::Accepted, order.id, 0, order.price, order.quantity));
 
   // Match against opposite side
   if (order.side == Side::Buy) {
     Quantity remaining = order.quantity;
-    while (remaining > 0 && !sellSideMap.empty() && Top(Side::Sell).price <= order.price) {
+    while (remaining > 0 && !sellSideMap.empty() &&
+           Compatible(order, Top(Side::Sell).price)) {
       // take fromt front of best ask queue in each iteration
       auto it = sellSideMap.begin();
       PriceTicks price = it->first;
@@ -75,13 +126,17 @@ std::vector<Event> OrderBook::Submit(const NewOrder& order) {
       }
     }
 
-    // Rest GTC
     if (remaining > 0 && order.tif == TimeInForce::GTC) {
       AddOrder({order.id, order.side, order.price, remaining});
+    } else if (remaining > 0 && (order.tif == TimeInForce::IOC ||
+                                 order.tif == TimeInForce::Market)) {
+      events.push_back(Emit(EventType::Cancelled, order.id, 0, order.price,
+                            remaining));
     }
   } else {
     Quantity remaining = order.quantity;
-    while (remaining > 0 && !buySideMap.empty() && Top(Side::Buy).price >= order.price) {
+    while (remaining > 0 && !buySideMap.empty() &&
+           Compatible(order, Top(Side::Buy).price)) {
       // take fromt front of best bid queue in each iteration
       auto it = buySideMap.begin();
       PriceTicks price = it->first;
@@ -124,9 +179,12 @@ std::vector<Event> OrderBook::Submit(const NewOrder& order) {
       }
     }
 
-    // Rest GTC
     if (remaining > 0 && order.tif == TimeInForce::GTC) {
       AddOrder({order.id, order.side, order.price, remaining});
+    } else if (remaining > 0 && (order.tif == TimeInForce::IOC ||
+                                 order.tif == TimeInForce::Market)) {
+      events.push_back(Emit(EventType::Cancelled, order.id, 0, order.price,
+                            remaining));
     }
   }
 

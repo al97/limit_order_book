@@ -26,7 +26,7 @@ Owners:
 - [x] Milestone 0: Shared contracts and scaffolding
 - [x] Milestone 1: Resting book and reference model
 - [x] Milestone 2: Matching, cancellation, and differential tests (`engine/matching-cancel`, `test/m2-differential`)
-- [ ] Milestone 3: Time-in-force and hardening
+- [x] Milestone 3: Time-in-force and hardening (`test/fuzz-hardening`)
 - [ ] Optional Milestone 4: Real-world market-data replay
 - [ ] Optional Milestone 5: Benchmarks and final demonstration
 
@@ -67,7 +67,7 @@ orders. Provider-specific code must not appear in the engine's public API.
 - [x] Implement integer ticks and quantities ([PR #2](https://github.com/al97/limit_order_book/pull/2)).
 - [x] Implement price-time matching at the resting order's price (`engine/matching-cancel`).
 - [x] Implement active cancellation (`engine/matching-cancel`).
-- [ ] Implement GTC, IOC, Market, and FOK behavior (GTC rest/match in Submit; IOC/Market/FOK in Milestone 3).
+- [x] Implement GTC, IOC, Market, and FOK behavior (`engine/matching-cancel`, `test/fuzz-hardening`).
 - [x] Add implementation-local unit tests with each production change ([PR #2](https://github.com/al97/limit_order_book/pull/2), [PR #5](https://github.com/al97/limit_order_book/pull/5)).
 - [ ] Add benchmarks only after all correctness gates pass.
 
@@ -132,8 +132,8 @@ orders. Provider-specific code must not appear in the engine's public API.
 - [x] Zero quantity rejects without mutation (`engine/matching-cancel`).
 - [x] Unknown or already-filled cancellation returns `UnknownOrder` (unknown ID in Cancel; filled ID covered by reference tests).
 - [x] Trades occur at the resting maker's price (`engine/matching-cancel`).
-- [ ] A Market order never rests.
-- [ ] An insufficient FOK order creates no trades and no mutation.
+- [x] A Market order never rests (`test/fuzz-hardening`).
+- [x] An insufficient FOK order creates no trades and no mutation (`test/fuzz-hardening`).
 - [x] Engine sequence, not wall-clock time, determines FIFO order (FIFO lists + monotonic event sequence).
 
 ### Shared golden scenarios
@@ -265,11 +265,11 @@ Work in parallel after Milestone 0 merges.
 
 ### Albert: remaining order behavior
 
-- [ ] Implement IOC: match available quantity and cancel the remainder.
-- [ ] Implement Market: ignore a price cap and never rest.
-- [ ] Implement an FOK read-only liquidity pre-check.
-- [ ] Prevent overflow during the FOK quantity check.
-- [ ] Confirm insufficient FOK cannot emit a partial trade.
+- [x] Implement IOC: match available quantity and cancel the remainder (`test/fuzz-hardening`).
+- [x] Implement Market: ignore a price cap and never rest (`test/fuzz-hardening`).
+- [x] Implement an FOK read-only liquidity pre-check (`test/fuzz-hardening`).
+- [x] Prevent overflow during the FOK quantity check (`test/fuzz-hardening`).
+- [x] Confirm insufficient FOK cannot emit a partial trade (`test/fuzz-hardening`).
 
 ### Brian: reference time-in-force
 
@@ -286,29 +286,29 @@ Work in parallel after Milestone 0 merges.
 
 ### Brian: hardening
 
-- [ ] Add no-mutation assertions for all rejected commands.
-- [ ] Add empty-book and one-sided-book scenarios.
-- [ ] Add maximum-value boundary scenarios.
-- [ ] Expand randomized testing across all time-in-force values.
-- [ ] Add a debug invariant checker invocation after every generated command.
-- [ ] Run the test suite repeatedly under ASAN and UBSAN.
-- [ ] Document how to reproduce every randomized failure.
+- [x] Add no-mutation assertions for all rejected commands (`test/fuzz-hardening`).
+- [x] Add empty-book and one-sided-book scenarios (`test/fuzz-hardening`).
+- [x] Add maximum-value boundary scenarios (`test/fuzz-hardening`).
+- [x] Expand randomized testing across all time-in-force values (`test/fuzz-hardening`).
+- [x] Add a debug invariant checker invocation after every generated command (`test/fuzz-hardening`).
+- [x] Run the test suite repeatedly under ASAN and UBSAN.
+- [x] Document how to reproduce every randomized failure (`README.md`).
 
 ### Both: MVP documentation
 
-- [ ] Update the README with the architecture and build commands.
-- [ ] Add one complete submit/match/cancel example.
-- [ ] State clearly that the project is a learning engine, not a production
+- [x] Update the README with the architecture and build commands.
+- [x] Add one complete submit/match/cancel example.
+- [x] State clearly that the project is a learning engine, not a production
       exchange.
-- [ ] Document unsupported behavior.
+- [x] Document unsupported behavior.
 
 ### MVP exit gate
 
-- [ ] GTC, IOC, Market, FOK, and cancellation have golden tests.
-- [ ] Random differential tests pass with fixed seeds.
-- [ ] All invariants hold after every command.
-- [ ] ASAN and UBSAN pass.
-- [ ] A fresh clone builds and tests with one documented command.
+- [x] GTC, IOC, Market, FOK, and cancellation have golden tests.
+- [x] Random differential tests pass with fixed seeds.
+- [x] All invariants hold after every command.
+- [x] ASAN and UBSAN pass.
+- [x] A fresh clone builds and tests with one documented command.
 - [ ] Each contributor has reviewed the other's work.
 
 At this point, the core project is complete enough to discuss in interviews.
