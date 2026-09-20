@@ -38,7 +38,7 @@ namespace lob {
   };
 
   enum class RejectReason : std::uint8_t {
-    None, DuplicateOrderId, ZeroQuantity, UnknownOrder
+    None, DuplicateOrderId, ZeroQuantity, UnknownOrder, NotEnoughQuantity
   };
 
   struct Event {
