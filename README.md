@@ -20,6 +20,27 @@ cmake -S cpp -B build -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-Wall -Wextra 
 
 If you want sanitizers, follow the `asan` and `ubsan` jobs in `.github/workflows/ci.yml`.
 
+## Benchmarks
+
+`lob_bench` in Release. Laptop baseline, not an exchange SLA. Ten runs; typical is median p50, tail is median p99. Workloads and how to regenerate are in [Matcher benchmarks](docs/benchmarks.md).
+
+```bash
+cmake -S cpp -B build-release -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-Wall -Wextra -Wpedantic -Werror" && cmake --build build-release --parallel --target lob_bench && ./build-release/lob_bench
+```
+
+Example, Clang 21, Release, Apple M1 Pro:
+
+| | typical | tail |
+| --- | ---: | ---: |
+| rest a bid | 125 ns | 167 ns |
+| cancel | 166 ns | 292 ns |
+| take 1 maker | 125 ns | 167 ns |
+| take 10 makers | 583 ns | 708 ns |
+| take 100 makers | 4.6 µs | 5.8 µs |
+| mixed replay | 167 ns | 334 ns |
+
+`ctest` does not run this binary.
+
 ## Example
 
 ```cpp

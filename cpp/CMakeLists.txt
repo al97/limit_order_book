@@ -71,3 +71,13 @@ add_test(
 target_include_directories(differential_test PRIVATE include tests)
 target_compile_features(differential_test PRIVATE cxx_std_20)
 target_link_libraries(differential_test PRIVATE lob)
+
+add_executable(lob_bench
+  bench/bench.cpp
+)
+
+target_link_libraries(lob_bench PRIVATE lob)
+target_compile_features(lob_bench PRIVATE cxx_std_20)
+target_compile_definitions(lob_bench PRIVATE
+  LOB_BENCH_BUILD_TYPE="$<CONFIG>"
+)

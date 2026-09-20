@@ -28,7 +28,7 @@ Owners:
 - [x] Milestone 2: Matching, cancellation, and differential tests (`engine/matching-cancel`, `test/m2-differential`)
 - [x] Milestone 3: Time-in-force and hardening (`test/fuzz-hardening`)
 - [ ] Optional Milestone 4: Real-world market-data replay
-- [ ] Optional Milestone 5: Benchmarks and final demonstration
+- [ ] Optional Milestone 5: Benchmarks and final demonstration (matcher benches in `bench/demo`; replica demo waits on Milestone 4)
 
 ## Architecture boundary
 
@@ -69,7 +69,7 @@ orders. Provider-specific code must not appear in the engine's public API.
 - [x] Implement active cancellation (`engine/matching-cancel`).
 - [x] Implement GTC, IOC, Market, and FOK behavior (`engine/matching-cancel`, `test/fuzz-hardening`).
 - [x] Add implementation-local unit tests with each production change ([PR #2](https://github.com/al97/limit_order_book/pull/2), [PR #5](https://github.com/al97/limit_order_book/pull/5)).
-- [ ] Add benchmarks only after all correctness gates pass.
+- [x] Add benchmarks only after all correctness gates pass (`bench/demo`).
 
 ### Brian: independent verification
 
@@ -365,16 +365,16 @@ reverse-engineered Robinhood equities endpoints.
 
 **Suggested branch:** `bench/demo`
 
-- [ ] Benchmark a non-crossing resting insert.
-- [ ] Benchmark cancellation of a random live order.
-- [ ] Benchmark takers that fill 1, 10, and 100 makers.
-- [ ] Report latency distributions, not only averages.
-- [ ] Record compiler, build mode, CPU, and fixture sizes.
-- [ ] Profile before changing containers.
-- [ ] Keep the correctness-first implementation as a reference.
-- [ ] Demonstrate synthetic command replay through the matcher.
+- [x] Benchmark a non-crossing resting insert (`cpp/bench/bench.cpp`).
+- [x] Benchmark cancellation of a random live order (`cpp/bench/bench.cpp`).
+- [x] Benchmark takers that fill 1, 10, and 100 makers (`cpp/bench/bench.cpp`).
+- [x] Report latency distributions, not only averages (`docs/benchmarks.md`).
+- [x] Record compiler, build mode, CPU, and fixture sizes (`docs/benchmarks.md`).
+- [x] Profile before changing containers (captured `std::map` / `std::list` baseline).
+- [x] Keep the correctness-first implementation as a reference.
+- [x] Demonstrate synthetic command replay through the matcher (`synthetic_replay` workload).
 - [ ] Demonstrate real market-data replay through the replica.
-- [ ] Explain why these are separate data flows.
+- [x] Explain why these are separate data flows (`docs/benchmarks.md`).
 
 ## Pull-request checklist
 
