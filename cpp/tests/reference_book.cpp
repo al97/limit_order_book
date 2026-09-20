@@ -171,7 +171,7 @@ std::vector<Event> ReferenceBook::Submit(const NewOrder& order) {
                                    : AvailableAgainst(bids_, order);
     if (available < order.quantity) {
       return {Next(EventType::Rejected, order.id, 0, order.price, order.quantity,
-                   RejectReason::None)};
+                   RejectReason::NotEnoughQuantity)};
     }
   }
 
