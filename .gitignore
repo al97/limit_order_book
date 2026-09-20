@@ -3,3 +3,4 @@
 /cpp/build/
 /.vscode/
 .DS_Store
+failing_seed.txt

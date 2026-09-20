@@ -1,37 +1,52 @@
+#include <type_traits>
+#include <variant>
 #include <vector>
 
 #include "lob/order_book.hpp"
 #include "reference_book.hpp"
+#include "scenarios/worked_examples.hpp"
 #include "snapshot.hpp"
 
 namespace {
 
 constexpr std::size_t kFullDepth = 32;
 
-void RestProduction(lob::OrderBook& book, const lob::NewOrder& order) {
-  book.AddOrder(lob::Order{order.id, order.side, order.price, order.quantity});
+void RunNonCrossing(const std::vector<lob::NewOrder>& orders) {
+  lob::test::Commands commands;
+  commands.reserve(orders.size());
+  for (const lob::NewOrder& order : orders) {
+    commands.push_back(lob::test::SubmitCommand{order});
+  }
+  RequireStream(commands);
 }
 
-void RunNonCrossing(const std::vector<lob::NewOrder>& commands) {
+void ExpectResting(const lob::test::Commands& commands, lob::OrderId id,
+                   lob::Quantity quantity, const char* label) {
   lob::OrderBook production;
   lob::ref::ReferenceBook reference;
-  std::vector<lob::NewOrder> history;
-  std::vector<lob::OrderId> live;
-
-  RequireAgree("empty book", history, Capture(production, live, kFullDepth),
-               Capture(reference, live, kFullDepth));
-
-  for (const lob::NewOrder& order : commands) {
-    history.push_back(order);
-    RestProduction(production, order);
-    const std::vector<lob::Event> events = reference.Submit(order);
-    if (events.size() != 1 || events[0].type != lob::EventType::Accepted) {
-      FailWithHistory("reference rejected a non-crossing rest", history);
-    }
-    live.push_back(order.id);
-    RequireAgree("after rest", history, Capture(production, live, kFullDepth),
-                 Capture(reference, live, kFullDepth));
+  std::vector<lob::OrderId> ids;
+  for (const lob::test::Command& command : commands) {
+    std::visit(
+        [&](const auto& payload) {
+          using T = std::decay_t<decltype(payload)>;
+          if constexpr (std::is_same_v<T, lob::test::SubmitCommand>) {
+            production.Submit(payload.order);
+            reference.Submit(payload.order);
+            ids.push_back(payload.order.id);
+          } else {
+            production.Cancel(payload.id);
+            reference.Cancel(payload.id);
+            ids.push_back(payload.id);
+          }
+        },
+        command);
   }
+  if (production.GetRestingQuantity(id) != quantity ||
+      reference.GetRestingQuantity(id) != quantity) {
+    FailWithHistory(label, commands);
+  }
+  RequireAgree(label, {}, Capture(production, ids, kFullDepth),
+               Capture(reference, ids, kFullDepth));
 }
 
 }  // namespace
@@ -65,10 +80,84 @@ void TestSellOnlyBook() {
   });
 }
 
+void TestGoldenCrossAtMakerPrice() {
+  RequireStream(lob::test::GoldenCrossAtMakerPrice());
+}
+
+void TestGoldenFifoAtOnePrice() {
+  RequireStream(lob::test::GoldenFifoAtOnePrice());
+  ExpectResting(lob::test::GoldenFifoAtOnePrice(), 2, 4,
+                "fifo leftover should rest on order 2");
+}
+
+void TestTakerRemainderRests() {
+  RequireStream({
+      lob::test::SubmitGtc(1, lob::Side::Sell, 100, 3),
+      lob::test::SubmitGtc(2, lob::Side::Buy, 101, 10),
+  });
+}
+
+void TestSweepStopsAtUnacceptablePrice() {
+  RequireStream({
+      lob::test::SubmitGtc(1, lob::Side::Sell, 100, 3),
+      lob::test::SubmitGtc(2, lob::Side::Sell, 110, 5),
+      lob::test::SubmitGtc(3, lob::Side::Buy, 101, 10),
+  });
+}
+
+void TestIncomingSellMatchesHighestBid() {
+  RequireStream({
+      lob::test::SubmitGtc(1, lob::Side::Buy, 100, 4),
+      lob::test::SubmitGtc(2, lob::Side::Buy, 101, 6),
+      lob::test::SubmitGtc(3, lob::Side::Sell, 100, 8),
+  });
+}
+
+void TestPlainEnglishWorkedExample() {
+  const lob::test::Commands commands = lob::test::PlainEnglishWorkedExample();
+  RequireStream(commands);
+  ExpectResting(commands, 11, 2, "plain-english leftover on order 11");
+  ExpectResting(commands, 12, 10, "plain-english order 12 untouched");
+  ExpectResting(commands, 10, 0, "plain-english order 10 filled");
+  ExpectResting(commands, 20, 0, "plain-english taker filled");
+}
+
+void TestTechnicalNumericExample() {
+  const lob::test::Commands commands = lob::test::TechnicalNumericExample();
+  RequireStream(commands);
+  ExpectResting(commands, 7, 90, "numeric example remainder rests at 10150");
+  ExpectResting(commands, 1, 0, "numeric example cancelled the 10050 bid");
+  ExpectResting(commands, 2, 80, "numeric example 10000 bid untouched");
+}
+
+void TestCancelPreservesSurvivorFifo() {
+  RequireStream(lob::test::CancelHeadMiddleTail());
+}
+
+void TestUnknownAndDuplicateRejects() {
+  RequireStream({
+      lob::test::CancelOrder(9),
+      lob::test::SubmitGtc(1, lob::Side::Buy, 100, 10),
+      lob::test::SubmitGtc(1, lob::Side::Sell, 90, 4),
+      lob::test::SubmitGtc(2, lob::Side::Buy, 100, 0),
+      lob::test::CancelOrder(1),
+      lob::test::CancelOrder(1),
+  });
+}
+
 int main() {
   TestGoldenNonCrossingRest();
   TestBidAndAskPriceOrder();
   TestSamePriceSumsLevel();
   TestSellOnlyBook();
+  TestGoldenCrossAtMakerPrice();
+  TestGoldenFifoAtOnePrice();
+  TestTakerRemainderRests();
+  TestSweepStopsAtUnacceptablePrice();
+  TestIncomingSellMatchesHighestBid();
+  TestPlainEnglishWorkedExample();
+  TestTechnicalNumericExample();
+  TestCancelPreservesSurvivorFifo();
+  TestUnknownAndDuplicateRejects();
   return 0;
 }
