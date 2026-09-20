@@ -214,8 +214,7 @@ Quantity OrderBook::GetRestingQuantity(OrderId id) const {
 }
 
 LevelSnapshot OrderBook::Top(Side side) {
-  LevelSnapshot level;
-  level.quantity = 0;
+  LevelSnapshot level{.price = 0, .quantity = 0};
   if (side == Side::Buy && !buySideMap.empty()) {
     const auto& [price, queue] = *buySideMap.begin();
     level.price = price;
@@ -237,9 +236,7 @@ std::vector<LevelSnapshot> OrderBook::Depth(Side side, std::size_t levels) const
   std::vector<LevelSnapshot> level_snap;
   if (side == Side::Buy) {
     for (const auto& [price, order_queue] : buySideMap) {
-      LevelSnapshot snap_at_price;
-      snap_at_price.price = price;
-      snap_at_price.quantity = 0;
+      LevelSnapshot snap_at_price{.price = price, .quantity = 0};
       for (const auto& order : order_queue) {
         snap_at_price.quantity += order.quantity;
       }
@@ -251,9 +248,7 @@ std::vector<LevelSnapshot> OrderBook::Depth(Side side, std::size_t levels) const
   }
   else {
     for (const auto& [price, order_queue] : sellSideMap) {
-      LevelSnapshot snap_at_price;
-      snap_at_price.price = price;
-      snap_at_price.quantity = 0;
+      LevelSnapshot snap_at_price{.price = price, .quantity = 0};
       for (const auto& order : order_queue) {
         snap_at_price.quantity += order.quantity;
       }
