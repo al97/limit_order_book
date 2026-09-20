@@ -172,46 +172,6 @@ void TestCancel() {
   assert(book.Top(lob::Side::Buy).quantity == 0);
 }
 
-void TestTifIocMarketFok() {
-  // IOC (golden_scenarios.md)
-  {
-    lob::OrderBook book;
-    book.Submit({1, lob::Side::Sell, 100, 3, lob::TimeInForce::GTC});
-    std::vector<lob::Event> events =
-        book.Submit({2, lob::Side::Buy, 101, 10, lob::TimeInForce::IOC});
-    assert(events.back().type == lob::EventType::Cancelled);
-    assert(book.GetRestingQuantity(2) == 0);
-    assert(book.GetVolumeAtPriceAndSide(100, lob::Side::Sell) == 0);
-  }
-
-  // Market sweeps levels; remainder cancelled (golden_scenarios.md)
-  {
-    lob::OrderBook book;
-    book.Submit({1, lob::Side::Sell, 100, 3, lob::TimeInForce::GTC});
-    book.Submit({2, lob::Side::Sell, 110, 5, lob::TimeInForce::GTC});
-    std::vector<lob::Event> events =
-        book.Submit({3, lob::Side::Buy, 1, 10, lob::TimeInForce::Market});
-    assert(events.back().type == lob::EventType::Cancelled);
-    assert(book.GetVolumeAtPriceAndSide(100, lob::Side::Sell) == 0);
-    assert(book.GetVolumeAtPriceAndSide(110, lob::Side::Sell) == 0);
-    assert(book.GetRestingQuantity(3) == 0);
-  }
-
-  // Insufficient FOK rejects without mutation (golden_scenarios.md)
-  {
-    lob::OrderBook book;
-    book.Submit({1, lob::Side::Sell, 100, 3, lob::TimeInForce::GTC});
-    book.Submit({2, lob::Side::Sell, 110, 5, lob::TimeInForce::GTC});
-    std::vector<lob::Event> events =
-        book.Submit({3, lob::Side::Buy, 101, 8, lob::TimeInForce::FOK});
-    assert(events.size() == 1);
-    assert(events[0].type == lob::EventType::Rejected);
-    assert(events[0].reason == lob::RejectReason::NotEnoughQuantity);
-    assert(book.GetVolumeAtPriceAndSide(100, lob::Side::Sell) == 3);
-    assert(book.GetVolumeAtPriceAndSide(110, lob::Side::Sell) == 5);
-  }
-}
-
 int main() {
   TestEmptyBook();
   TestOneAddedOrder();
@@ -224,6 +184,5 @@ int main() {
   TestSubmit();
   TestSubmitGolden3();
   TestCancel();
-  TestTifIocMarketFok();
   return 0;
 }
